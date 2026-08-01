@@ -13,6 +13,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = `${SITE_BRAND_NAME} — ${t(lang, 'tagline')}`;
   return {
     metadataBase: new URL(siteUrl),
+    icons: {
+      icon: '/favicon.svg',
+      shortcut: '/favicon.svg',
+      apple: '/favicon.svg',
+    },
     title: {
       default: title,
       template: `%s | ${SITE_BRAND_NAME}`,
