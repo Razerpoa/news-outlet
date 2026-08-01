@@ -23,8 +23,8 @@ export default async function Header({ activeSlug }: { activeSlug?: string }) {
         <Link href="/" className="site-logo" aria-label={`${SITE_BRAND_NAME} — ${t(lang, 'home')}`}>
           <img src="/logo.svg" alt="" width={38} height={38} />
           <span>
-            {brand.first}
-            {brand.rest ? <em>{brand.rest}</em> : null}
+            <span className="brand-white">{brand.first}</span>
+            {brand.rest ? <span className="brand-red">{brand.rest}</span> : null}
           </span>
         </Link>
 

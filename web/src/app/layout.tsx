@@ -35,6 +35,20 @@ export const viewport: Viewport = {
   themeColor: '#b3261e',
 };
 
+// Pastikan pengunjung baru langsung memakai bahasa Indonesia.
+const langScript = `
+(function () {
+  try {
+    var hasLangCookie = document.cookie.split(';').some(function (part) {
+      return part.trim().indexOf('kn_lang=') === 0;
+    });
+    if (!hasLangCookie) {
+      document.cookie = 'kn_lang=id; path=/; max-age=31536000; samesite=lax';
+    }
+  } catch (e) {}
+})();
+`;
+
 // Terapkan tema tersimpan sebelum render untuk mencegah kedipan (FOUC)
 const themeScript = `
 (function () {
@@ -52,6 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: langScript }} />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>

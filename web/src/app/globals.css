@@ -176,8 +176,13 @@ input {
   line-height: 1.1;
 }
 
-.site-logo em {
-  font-style: normal;
+.site-logo .brand-white,
+.footer-logo .brand-white {
+  color: var(--header-ink);
+}
+
+.site-logo .brand-red,
+.footer-logo .brand-red {
   color: var(--accent);
 }
 
@@ -1546,11 +1551,6 @@ input {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-}
-
-.footer-logo em {
-  font-style: normal;
-  color: #e2554b;
 }
 
 .footer-about {

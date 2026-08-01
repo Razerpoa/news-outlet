@@ -6,12 +6,22 @@ const rawBrandName =
 export const SITE_BRAND_NAME = rawBrandName.replace(/\s+/g, ' ').trim() || 'DreksZone';
 
 export function getBrandParts(name = SITE_BRAND_NAME) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  const first = parts.shift() ?? name;
-  const rest = parts.join(' ');
+  const normalized = name.trim().replace(/\s+/g, ' ');
+  const uppercaseIndexes = Array.from(normalized.matchAll(/[A-Z]/g), (match) => match.index ?? -1);
+  const secondCapitalIndex = uppercaseIndexes[1];
+
+  if (typeof secondCapitalIndex === 'number') {
+    const first = normalized.slice(0, secondCapitalIndex);
+    const rest = normalized.slice(secondCapitalIndex);
+
+    return {
+      first,
+      rest,
+    };
+  }
 
   return {
-    first,
-    rest,
+    first: normalized,
+    rest: '',
   };
 }

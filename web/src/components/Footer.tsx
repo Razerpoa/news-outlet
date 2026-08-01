@@ -17,8 +17,8 @@ export default async function Footer() {
         <div>
           <Link href="/" className="footer-logo">
             <img src="/logo.svg" alt="" width={34} height={34} />
-            {brand.first}
-            {brand.rest ? <em>{brand.rest}</em> : null}
+            <span className="brand-white">{brand.first}</span>
+            {brand.rest ? <span className="brand-red">{brand.rest}</span> : null}
           </Link>
           <p className="footer-about">{t(lang, 'about_footer')}</p>
         </div>
