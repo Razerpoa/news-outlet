@@ -25,7 +25,6 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
   const [author, setAuthor] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [featured, setFeatured] = useState(false);
 
   // Pratinjau slug dari judul (server memutuskan slug final)
   const slugPreview = useMemo(
@@ -61,7 +60,6 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
     setAuthor('');
     setImageUrl('');
     setImageFile(null);
-    setFeatured(false);
     setError(null);
     setCreatedSlug(null);
     setStatus('idle');
@@ -79,7 +77,6 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
       formData.append('excerpt', excerpt.trim());
       formData.append('content', content.trim());
       formData.append('author', author.trim());
-      formData.append('featured', String(featured));
 
       if (imageFile) {
         formData.append('image_file', imageFile);
@@ -231,28 +228,29 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder={t(lang, 'field_image_ph')}
           />
-          <input
-            id="article-image-upload"
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-          />
+
+          <div className="upload-picker">
+            <label htmlFor="article-image-upload" className="upload-picker-btn">
+              {t(lang, 'upload_file')}
+            </label>
+            <span className="upload-picker-meta">
+              {imageFile ? imageFile.name : t(lang, 'upload_file_empty')}
+            </span>
+            <input
+              id="article-image-upload"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+              className="upload-picker-input"
+            />
+          </div>
+
           <p className="form-hint">{t(lang, 'image_hint')}</p>
           {previewable && (
             <div className="image-preview">
               <img src={previewSrc} alt={t(lang, 'image_preview_alt')} />
             </div>
           )}
-        </div>
-
-        <div className="form-check">
-          <input
-            id="article-featured"
-            type="checkbox"
-            checked={featured}
-            onChange={(e) => setFeatured(e.target.checked)}
-          />
-          <label htmlFor="article-featured">{t(lang, 'featured_label')}</label>
         </div>
 
         <div className="form-actions">

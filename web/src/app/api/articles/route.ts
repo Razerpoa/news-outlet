@@ -123,7 +123,6 @@ export async function POST(req: NextRequest) {
     const content = String((formData?.get('content') ?? body?.content ?? '')).trim();
     const author = String((formData?.get('author') ?? body?.author ?? '')).trim();
     const imageUrl = String((formData?.get('image_url') ?? body?.image_url ?? '')).trim();
-    const featured = String(formData?.get('featured') ?? body?.featured ?? 'false') === 'true';
     const categoryId = parseInt(String(formData?.get('category_id') ?? body?.category_id ?? ''), 10);
     const uploadedFile = formData?.get('image_file');
 
@@ -174,7 +173,7 @@ export async function POST(req: NextRequest) {
 
     const { rows } = await pool.query(
       `INSERT INTO articles (slug, title, title_en, excerpt, excerpt_en, content, content_en, category_id, author, image_url, published_at, views, featured)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), 0, $11)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), 0, false)
        RETURNING id, slug`,
       [
         slug,
@@ -187,7 +186,6 @@ export async function POST(req: NextRequest) {
         categoryId,
         author,
         image,
-        featured,
       ]
     );
 

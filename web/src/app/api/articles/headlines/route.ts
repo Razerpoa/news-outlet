@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const lang = langFrom(req.nextUrl.searchParams.get('lang'));
     const limit = parseLimit(req.nextUrl.searchParams.get('limit'), 5, 8);
     const { rows } = await pool.query(
-      `${ARTICLE_SELECT} WHERE a.featured = true ORDER BY a.published_at DESC LIMIT $1`,
+      `${ARTICLE_SELECT} ORDER BY a.views DESC, a.published_at DESC LIMIT $1`,
       [limit]
     );
     return NextResponse.json(rows.map((r) => localizeArticle(r, lang)));

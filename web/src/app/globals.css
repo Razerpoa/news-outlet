@@ -1341,6 +1341,43 @@ input {
   color: var(--ink-soft);
 }
 
+.upload-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.upload-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 10px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 700;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.upload-picker-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.upload-picker-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.upload-picker-input {
+  display: none;
+}
+
 .image-preview {
   margin-top: 10px;
   border-radius: var(--radius-sm);
