@@ -3,6 +3,7 @@ import { api } from '@/lib/api';
 import { getSessionUser } from '@/lib/auth';
 import { getLang } from '@/lib/lang-server';
 import { t } from '@/lib/lang';
+import { getBrandParts, SITE_BRAND_NAME } from '@/lib/brand';
 import { todayLong } from '@/lib/utils';
 import ThemeToggle from './ThemeToggle';
 import MobileMenu from './MobileMenu';
@@ -14,14 +15,16 @@ export default async function Header({ activeSlug }: { activeSlug?: string }) {
   const categories = (await api.categories(lang)) ?? [];
   // Tombol "Tulis Berita" hanya tampil untuk redaksi yang sudah masuk.
   const user = await getSessionUser();
+  const brand = getBrandParts();
 
   return (
     <header className="site-header">
       <div className="header-main">
-        <Link href="/" className="site-logo" aria-label={`KabarNusantara — ${t(lang, 'home')}`}>
+        <Link href="/" className="site-logo" aria-label={`${SITE_BRAND_NAME} — ${t(lang, 'home')}`}>
           <img src="/logo.svg" alt="" width={38} height={38} />
           <span>
-            Kabar<em>Nusantara</em>
+            {brand.first}
+            {brand.rest ? <em>{brand.rest}</em> : null}
           </span>
         </Link>
 

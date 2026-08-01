@@ -3,11 +3,13 @@ import { api } from '@/lib/api';
 import { getSessionUser } from '@/lib/auth';
 import { getLang } from '@/lib/lang-server';
 import { t } from '@/lib/lang';
+import { getBrandParts } from '@/lib/brand';
 
 export default async function Footer() {
   const lang = await getLang();
   const categories = (await api.categories(lang)) ?? [];
   const user = await getSessionUser();
+  const brand = getBrandParts();
 
   return (
     <footer className="site-footer">
@@ -15,7 +17,8 @@ export default async function Footer() {
         <div>
           <Link href="/" className="footer-logo">
             <img src="/logo.svg" alt="" width={34} height={34} />
-            Kabar<em>Nusantara</em>
+            {brand.first}
+            {brand.rest ? <em>{brand.rest}</em> : null}
           </Link>
           <p className="footer-about">{t(lang, 'about_footer')}</p>
         </div>

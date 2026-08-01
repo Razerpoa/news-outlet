@@ -3,24 +3,25 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getLang } from '@/lib/lang-server';
 import { t } from '@/lib/lang';
+import { SITE_BRAND_NAME } from '@/lib/brand';
 import './globals.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLang();
-  const title = `KabarNusantara — ${t(lang, 'tagline')}`;
+  const title = `${SITE_BRAND_NAME} — ${t(lang, 'tagline')}`;
   return {
     metadataBase: new URL(siteUrl),
     title: {
       default: title,
-      template: '%s | KabarNusantara',
+      template: `%s | ${SITE_BRAND_NAME}`,
     },
     description: t(lang, 'meta_desc'),
     keywords: t(lang, 'meta_keys'),
     openGraph: {
       type: 'website',
-      siteName: 'KabarNusantara',
+      siteName: SITE_BRAND_NAME,
       locale: lang === 'en' ? 'en_US' : 'id_ID',
       title,
       description: t(lang, 'og_desc'),

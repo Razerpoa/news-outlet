@@ -3,7 +3,7 @@
  * Modul ini aman dipakai dari server maupun client (tanpa import next/headers).
  * Server yang perlu membaca cookie pakai `getLang()` dari './lang-server'.
  */
-
+import { SITE_BRAND_NAME } from '@/lib/brand';
 export type Lang = 'id' | 'en';
 
 export const LANG_COOKIE = 'kn_lang';
@@ -21,6 +21,8 @@ export function langFrom(v: string | null | undefined): Lang {
 
 type Dict = Record<string, string>;
 type Messages = Record<Lang, Dict>;
+
+const withBrand = (value: string): string => value.replace(/KabarNusantara/g, SITE_BRAND_NAME);
 
 export const messages: Messages = {
   id: {
@@ -58,7 +60,7 @@ export const messages: Messages = {
     contact: 'Kontak',
     privacy: 'Kebijakan Privasi',
     search_link: 'Pencarian',
-    copyright: '© 2026 KabarNusantara. Hak cipta dilindungi undang-undang.',
+    copyright: withBrand('© 2026 KabarNusantara. Hak cipta dilindungi undang-undang.'),
     read_count: '{n} dibaca',
     minutes_read: '{n} menit baca',
     illustration: 'Ilustrasi: {title} — Dokumen redaksi (gambar ilustratif).',
@@ -72,7 +74,7 @@ export const messages: Messages = {
     all_latest: 'Semua Berita Terbaru',
     category_news: 'Berita {name}',
     cat_desc_all: 'Kumpulan berita terbaru dari seluruh kategori, diperbarui setiap hari.',
-    cat_desc: 'Kumpulan berita seputar {name} yang disusun redaksi KabarNusantara.',
+    cat_desc: withBrand('Kumpulan berita seputar {name} yang disusun redaksi KabarNusantara.'),
     prev: '← Sebelumnya',
     next: 'Berikutnya →',
     page_nav: 'Navigasi halaman',
@@ -91,11 +93,11 @@ export const messages: Messages = {
     search_btn: 'Cari',
     login_title: 'Masuk Redaksi',
     login_lead:
-      'Halaman ini khusus untuk tim redaksi. Masuk untuk menerbitkan berita baru di KabarNusantara.',
+      withBrand('Halaman ini khusus untuk tim redaksi. Masuk untuk menerbitkan berita baru di KabarNusantara.'),
     login_google_btn: 'Masuk dengan Google',
     login_google_aria: 'Masuk dengan akun Google',
     login_google_desc:
-      'Gunakan akun Google yang terdaftar sebagai penulis KabarNusantara. Email lain tidak dapat masuk.',
+      withBrand('Gunakan akun Google yang terdaftar sebagai penulis KabarNusantara. Email lain tidak dapat masuk.'),
     login_error_unauthorized:
       'Akun Google ini belum terdaftar sebagai penulis. Hubungi redaksi untuk menambahkannya.',
     login_error_invalid_state: 'Percobaan masuk tidak valid. Silakan coba lagi.',
@@ -128,7 +130,7 @@ export const messages: Messages = {
     publishing: 'Menerbitkan…',
     slug_hint: 'Slug:',
     success_title: 'Artikel berhasil diterbitkan 🎉',
-    success_desc: 'Berita “{title}” kini tampil di beranda KabarNusantara.',
+    success_desc: withBrand('Berita “{title}” kini tampil di beranda KabarNusantara.'),
     view_article: 'Lihat Artikel',
     write_another: 'Tulis Berita Lain',
     err_generic: 'Terjadi kesalahan pada server',
@@ -153,8 +155,9 @@ export const messages: Messages = {
     time_yesterday: 'kemarin',
     time_day_ago: '{n} hari lalu',
     time_week_ago: '{n} minggu lalu',
-    meta_desc:
+    meta_desc: withBrand(
       'KabarNusantara — portal berita independen Indonesia. Informasi akurat, berimbang, dan mendalam dari Sabang sampai Merauke.',
+    ),
     meta_keys: ['berita', 'Indonesia', 'nasional', 'politik', 'ekonomi', 'teknologi', 'olahraga'].join(', '),
     og_desc: 'Portal berita independen Indonesia. Informasi akurat, berimbang, dan mendalam.',
     not_found_meta: 'Artikel tidak ditemukan',
@@ -194,7 +197,7 @@ export const messages: Messages = {
     contact: 'Contact',
     privacy: 'Privacy Policy',
     search_link: 'Search',
-    copyright: '© 2026 KabarNusantara. All rights reserved.',
+    copyright: withBrand('© 2026 KabarNusantara. All rights reserved.'),
     read_count: '{n} reads',
     minutes_read: '{n} min read',
     illustration: 'Illustration: {title} — Editorial document (illustrative image).',
@@ -208,7 +211,7 @@ export const messages: Messages = {
     all_latest: 'All Latest News',
     category_news: '{name} News',
     cat_desc_all: 'The latest news from every category, updated daily.',
-    cat_desc: 'A collection of {name} news curated by the KabarNusantara editorial team.',
+    cat_desc: withBrand('A collection of {name} news curated by the KabarNusantara editorial team.'),
     prev: '← Previous',
     next: 'Next →',
     page_nav: 'Pagination',
@@ -227,11 +230,11 @@ export const messages: Messages = {
     search_btn: 'Search',
     login_title: 'Editor Sign in',
     login_lead:
-      'This page is for the editorial team only. Sign in to publish new news on KabarNusantara.',
+      withBrand('This page is for the editorial team only. Sign in to publish new news on KabarNusantara.'),
     login_google_btn: 'Sign in with Google',
     login_google_aria: 'Sign in with your Google account',
     login_google_desc:
-      'Use a Google account registered as a KabarNusantara writer. Other emails cannot sign in.',
+      withBrand('Use a Google account registered as a KabarNusantara writer. Other emails cannot sign in.'),
     login_error_unauthorized:
       'This Google account is not registered as a writer. Contact the editorial team to add it.',
     login_error_invalid_state: 'Invalid sign-in attempt. Please try again.',
@@ -264,7 +267,7 @@ export const messages: Messages = {
     publishing: 'Publishing…',
     slug_hint: 'Slug:',
     success_title: 'Article published 🎉',
-    success_desc: '“{title}” is now live on the KabarNusantara homepage.',
+    success_desc: withBrand('“{title}” is now live on the KabarNusantara homepage.'),
     view_article: 'View Article',
     write_another: 'Write Another',
     err_generic: 'Something went wrong on the server',
@@ -289,8 +292,9 @@ export const messages: Messages = {
     time_yesterday: 'yesterday',
     time_day_ago: '{n} days ago',
     time_week_ago: '{n} weeks ago',
-    meta_desc:
+    meta_desc: withBrand(
       'KabarNusantara — Indonesia’s independent news portal. Accurate, balanced, and in-depth reporting from Sabang to Merauke.',
+    ),
     meta_keys: 'news, Indonesia, national, politics, economy, technology, sports',
     og_desc: 'Indonesia’s independent news portal. Accurate, balanced, and in-depth reporting.',
     not_found_meta: 'Article not found',

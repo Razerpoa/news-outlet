@@ -1,4 +1,4 @@
-name: kabar-nusantara
+name: kabar-nusantara-prod
 
 services:
   db:
@@ -23,8 +23,6 @@ services:
 
   web:
     image: razorcut777/drekszone:latest
-    build:
-      context: ./web
     container_name: kn-web
     restart: unless-stopped
     env_file:
@@ -32,10 +30,8 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-kabar}:${POSTGRES_PASSWORD:-kabar_secret}@db:5432/${POSTGRES_DB:-kabar_nusantara}
       NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
-      # Login redaksi via Google OAuth — isi kredensial di .env (lihat .env.example)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      # Penulis tambahan yang diizinkan login, dipisah koma (opsional)
       AUTHOR_EMAILS: ${AUTHOR_EMAILS:-}
     ports:
       - "${WEB_PORT:-3000}:3000"
@@ -43,8 +39,6 @@ services:
       db:
         condition: service_healthy
 
-  # Alat manajemen DB (Adminer) — hanya terikat ke localhost host, tidak
-  # diekspos ke jaringan. Untuk akses jarak jauh gunakan SSH tunnel.
   adminer:
     image: adminer
     container_name: adminer
@@ -57,13 +51,3 @@ services:
 
 volumes:
   pgdata:
-
-# MTU jaringan Docker disesuaikan dengan uplink host (mis. VPN/tunnel dengan
-# MTU 1420). Bila MTU container 1500 > MTU uplink, paket besar (mis. handshake
-# TLS ke Google) hilang diam-diam — gejalanya: koneksi TCP berhasil tapi
-# fetch ke layanan eksternal menggantung/timeout. Sesuaikan angka ini bila
-# uplink Anda berubah (cek: ip link show eth0 | grep mtu).
-networks:
-  default:
-    driver_opts:
-      com.docker.network.driver.mtu: 1400

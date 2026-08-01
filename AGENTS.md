@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in **KabarNusantara** — an Indonesian news portal (Kompas-style). Next.js 16 (App Router) + PostgreSQL, running in Docker.
+Guidance for AI coding agents working in **DreksZone** — an Indonesian news portal (Kompas-style). Next.js 16 (App Router) + PostgreSQL, running in Docker.
 
 Full project docs, API reference, and design decisions: see [README.md](./README.md) — **link to it, don't duplicate it**.
 
