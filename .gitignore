@@ -27,6 +27,9 @@ Thumbs.db
 # Docker
 *.pid
 
+# JSON configs (desktop.json, mobile.json, etc.)
+*.json
+
 # Python
 __pycache__/
 *.pyc

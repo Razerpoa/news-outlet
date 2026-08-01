@@ -2,11 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { api } from '@/lib/api';
+import { SITE_BRAND_NAME } from '@/lib/brand';
 import { getLang } from '@/lib/lang-server';
 import { t } from '@/lib/lang';
 import { formatDateTime, formatViews, readingTime } from '@/lib/utils';
 import ArticleCard from '@/components/ArticleCard';
 import ShareButtons from '@/components/ShareButtons';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,9 +48,39 @@ export default async function ArticlePage({ params }: Props) {
   const paragraphs = article.content.split('\n\n');
   const minutes = readingTime(article.content);
   const authorInitial = article.author.trim().charAt(0).toUpperCase();
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: article.title,
+    description: article.excerpt,
+    image: article.image_url,
+    author: {
+      '@type': 'Person',
+      name: article.author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_BRAND_NAME,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteUrl}/logo.svg`,
+      },
+    },
+    datePublished: article.published_at,
+    dateModified: article.published_at,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${siteUrl}/artikel/${article.slug}`,
+    },
+    keywords: [article.category_name, article.category_slug],
+  };
 
   return (
     <div className="container">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <article className="article-page">
         {/* Breadcrumb */}
         <nav className="breadcrumb" aria-label="Breadcrumb">

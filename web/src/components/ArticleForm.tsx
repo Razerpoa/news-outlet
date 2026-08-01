@@ -24,6 +24,7 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [featured, setFeatured] = useState(false);
 
   // Pratinjau slug dari judul (server memutuskan slug final)
@@ -39,12 +40,18 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
   );
 
   const previewable = useMemo(() => {
+    if (imageFile) return true;
     try {
       return new URL(imageUrl).protocol === 'http:' || new URL(imageUrl).protocol === 'https:';
     } catch {
       return false;
     }
-  }, [imageUrl]);
+  }, [imageFile, imageUrl]);
+
+  const previewSrc = useMemo(() => {
+    if (imageFile) return URL.createObjectURL(imageFile);
+    return imageUrl;
+  }, [imageFile, imageUrl]);
 
   const reset = () => {
     setTitle('');
@@ -53,6 +60,7 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
     setContent('');
     setAuthor('');
     setImageUrl('');
+    setImageFile(null);
     setFeatured(false);
     setError(null);
     setCreatedSlug(null);
@@ -65,18 +73,23 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
     setStatus('submitting');
 
     try {
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('category_id', categoryId);
+      formData.append('excerpt', excerpt.trim());
+      formData.append('content', content.trim());
+      formData.append('author', author.trim());
+      formData.append('featured', String(featured));
+
+      if (imageFile) {
+        formData.append('image_file', imageFile);
+      } else {
+        formData.append('image_url', imageUrl.trim());
+      }
+
       const res = await fetch('/api/articles', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          category_id: categoryId,
-          excerpt: excerpt.trim(),
-          content: content.trim(),
-          author: author.trim(),
-          image_url: imageUrl.trim(),
-          featured,
-        }),
+        body: formData,
       });
 
       const data = await res.json().catch(() => null);
@@ -218,10 +231,16 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder={t(lang, 'field_image_ph')}
           />
+          <input
+            id="article-image-upload"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+          />
           <p className="form-hint">{t(lang, 'image_hint')}</p>
           {previewable && (
             <div className="image-preview">
-              <img src={imageUrl} alt={t(lang, 'image_preview_alt')} />
+              <img src={previewSrc} alt={t(lang, 'image_preview_alt')} />
             </div>
           )}
         </div>

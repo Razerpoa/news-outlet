@@ -13,6 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = `${SITE_BRAND_NAME} — ${t(lang, 'tagline')}`;
   return {
     metadataBase: new URL(siteUrl),
+    alternates: {
+      canonical: siteUrl,
+    },
     icons: {
       icon: '/favicon.svg',
       shortcut: '/favicon.svg',
@@ -29,6 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: SITE_BRAND_NAME,
       locale: lang === 'en' ? 'en_US' : 'id_ID',
       title,
+      url: siteUrl,
       description: t(lang, 'og_desc'),
     },
   };

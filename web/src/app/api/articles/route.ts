@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
@@ -13,6 +15,73 @@ const DEFAULT_IMAGE =
 
 function isNonEmptyString(v: unknown): v is string {
   return typeof v === 'string' && v.trim().length > 0;
+}
+
+function sanitizeFilename(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 120) || 'upload';
+}
+
+function mimeToExtension(contentType: string | null): string {
+  switch (contentType?.toLowerCase()) {
+    case 'image/jpeg':
+      return '.jpg';
+    case 'image/png':
+      return '.png';
+    case 'image/webp':
+      return '.webp';
+    case 'image/gif':
+      return '.gif';
+    case 'image/svg+xml':
+      return '.svg';
+    default:
+      return '.jpg';
+  }
+}
+
+async function persistLocalImage(fileBuffer: Buffer, sourceName: string, contentType?: string): Promise<string> {
+  const uploadDir = path.resolve(process.cwd(), 'public', 'uploads', 'articles');
+  await fs.mkdir(uploadDir, { recursive: true });
+
+  const ext = path.extname(sourceName) || mimeToExtension(contentType || null);
+  const safeName = sanitizeFilename(path.basename(sourceName, ext) || `upload-${Date.now()}`);
+  const finalName = `${safeName}-${Date.now()}${ext}`;
+  const targetPath = path.join(uploadDir, finalName);
+
+  await fs.writeFile(targetPath, fileBuffer);
+  return `/uploads/articles/${finalName}`;
+}
+
+async function storeUploadedFile(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Tipe file gambar tidak didukung');
+  }
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  return persistLocalImage(fileBuffer, file.name, file.type);
+}
+
+async function storeRemoteImage(remoteUrl: string): Promise<string> {
+  const target = new URL(remoteUrl);
+  if (!['http:', 'https:'].includes(target.protocol)) {
+    throw new Error('URL gambar tidak valid');
+  }
+
+  const response = await fetch(target, { redirect: 'follow' });
+  if (!response.ok) {
+    throw new Error('Gagal mengunduh gambar');
+  }
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.startsWith('image/')) {
+    throw new Error('URL yang dipilih bukan gambar');
+  }
+
+  const fileBuffer = Buffer.from(await response.arrayBuffer());
+  const ext = path.extname(target.pathname) || mimeToExtension(contentType);
+  return persistLocalImage(fileBuffer, `remote-${Date.now()}${ext}`, contentType);
 }
 
 /** Hasilkan slug unik dari judul; bila bentrok, tambahkan angka (-2, -3, ...). */
@@ -35,18 +104,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Silakan masuk terlebih dahulu' }, { status: 401 });
     }
 
-    const body = await req.json().catch(() => null);
-    if (!body || typeof body !== 'object') {
+    let formData: FormData | null = null;
+    let body: Record<string, unknown> | null = null;
+
+    const contentType = req.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      formData = await req.formData();
+    } else {
+      body = await req.json().catch(() => null);
+    }
+
+    if (!formData && (!body || typeof body !== 'object')) {
       return NextResponse.json({ error: 'Data artikel tidak valid' }, { status: 400 });
     }
 
-    const title = String(body.title ?? '').trim();
-    const excerpt = String(body.excerpt ?? '').trim();
-    const content = String(body.content ?? '').trim();
-    const author = String(body.author ?? '').trim();
-    const imageUrl = String(body.image_url ?? '').trim();
-    const featured = body.featured === true;
-    const categoryId = parseInt(String(body.category_id), 10);
+    const title = String((formData?.get('title') ?? body?.title ?? '')).trim();
+    const excerpt = String((formData?.get('excerpt') ?? body?.excerpt ?? '')).trim();
+    const content = String((formData?.get('content') ?? body?.content ?? '')).trim();
+    const author = String((formData?.get('author') ?? body?.author ?? '')).trim();
+    const imageUrl = String((formData?.get('image_url') ?? body?.image_url ?? '')).trim();
+    const featured = String(formData?.get('featured') ?? body?.featured ?? 'false') === 'true';
+    const categoryId = parseInt(String(formData?.get('category_id') ?? body?.category_id ?? ''), 10);
+    const uploadedFile = formData?.get('image_file');
 
     // Validasi input
     if (title.length < 5 || title.length > 200) {
@@ -76,15 +155,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Kategori tidak ditemukan' }, { status: 400 });
     }
 
-    let image = imageUrl;
-    if (image) {
+    let image = DEFAULT_IMAGE;
+    if (uploadedFile instanceof File) {
+      image = await storeUploadedFile(uploadedFile);
+    } else if (imageUrl) {
       try {
-        new URL(image); // lempar error bila format URL tidak valid
+        image = await storeRemoteImage(imageUrl);
       } catch {
         return NextResponse.json({ error: 'URL gambar tidak valid' }, { status: 400 });
       }
-    } else {
-      image = DEFAULT_IMAGE;
     }
 
     const slug = await uniqueSlug(slugify(title));

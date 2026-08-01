@@ -2,9 +2,12 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { getLang } from '@/lib/lang-server';
 import { t } from '@/lib/lang';
+import { SITE_BRAND_NAME } from '@/lib/brand';
 import { formatViews, timeAgo } from '@/lib/utils';
 import ArticleCard from '@/components/ArticleCard';
 import Sidebar from '@/components/Sidebar';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,9 +23,28 @@ export default async function HomePage() {
   const latest = latestRes?.items ?? [];
   const cats = categories ?? [];
   const [hero, ...side] = headlines ?? [];
+  const homepageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_BRAND_NAME,
+    url: siteUrl,
+    description: t(lang, 'meta_desc'),
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_BRAND_NAME,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteUrl}/logo.svg`,
+      },
+    },
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageSchema) }}
+      />
       {/* ====================== Hero ====================== */}
       {hero && (
         <section className="hero">
