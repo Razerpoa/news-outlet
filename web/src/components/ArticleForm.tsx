@@ -113,7 +113,7 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
           <h2>{t(lang, 'success_title')}</h2>
           <p>{t(lang, 'success_desc', { title })}</p>
           <div className="form-success-actions">
-            <a className="btn" href={createdSlug ? `/artikel/${createdSlug}` : '/'}>
+            <a className="btn" href={createdSlug ? `/article/${createdSlug}` : '/'}>
               {t(lang, 'view_article')}
             </a>
             <button type="button" className="btn btn-ghost" onClick={reset}>
@@ -151,7 +151,7 @@ export default function ArticleForm({ categories, lang = 'id' }: Props) {
             required
           />
           <p className="form-hint">
-            {t(lang, 'slug_hint')} <code>/artikel/{slugPreview || 'judul-artikel'}</code>
+            {t(lang, 'slug_hint')} <code>/article/{slugPreview || 'article-title'}</code>
           </p>
         </div>
 

@@ -10,7 +10,7 @@ export async function GET() {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(`${SITE_URL}/masuk?error=missing_config`);
+    return NextResponse.redirect(`${SITE_URL}/login?error=missing_config`);
   }
 
   const state = createOAuthState();

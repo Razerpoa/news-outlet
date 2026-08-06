@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         // Halaman internal/transaksional tidak untuk diindeks mesin pencari
-        disallow: ['/masuk', '/tulis', '/cari', '/api/'],
+        disallow: ['/login', '/write', '/find', '/api/'],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

@@ -28,7 +28,7 @@ export default async function Footer() {
           <ul>
             {categories.slice(0, 6).map((c) => (
               <li key={c.id}>
-                <Link href={`/kategori/${c.slug}`}>{c.name}</Link>
+                <Link href={`/category/${c.slug}`}>{c.name}</Link>
               </li>
             ))}
           </ul>
@@ -51,13 +51,13 @@ export default async function Footer() {
             <li><Link href="/">{t(lang, 'contact')}</Link></li>
             <li>
               {user ? (
-                <Link href="/tulis">{t(lang, 'write_news')}</Link>
+                <Link href="/write">{t(lang, 'write_news')}</Link>
               ) : (
-                <Link href="/masuk">{t(lang, 'login_redaksi')}</Link>
+                <Link href="/login">{t(lang, 'login_redaksi')}</Link>
               )}
             </li>
             <li><Link href="/">{t(lang, 'privacy')}</Link></li>
-            <li><Link href="/cari">{t(lang, 'search_link')}</Link></li>
+            <li><Link href="/find">{t(lang, 'search_link')}</Link></li>
           </ul>
         </div>
       </div>

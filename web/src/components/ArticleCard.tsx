@@ -14,7 +14,7 @@ export default function ArticleCard({ article, variant = 'default', className = 
   if (variant === 'row') {
     return (
       <article className={`card-row ${className}`}>
-        <Link href={`/artikel/${article.slug}`} className="card-media" tabIndex={-1} aria-hidden>
+        <Link href={`/article/${article.slug}`} className="card-media" tabIndex={-1} aria-hidden>
           <img src={article.image_url} alt="" loading="lazy" />
         </Link>
         <div className="card-body">
@@ -25,7 +25,7 @@ export default function ArticleCard({ article, variant = 'default', className = 
             <span className="dot" />
             {article.category_name}
           </span>
-          <Link href={`/artikel/${article.slug}`}>
+          <Link href={`/article/${article.slug}`}>
             <h3 className="card-title" style={{ fontSize: '1rem' }}>
               {article.title}
             </h3>
@@ -42,7 +42,7 @@ export default function ArticleCard({ article, variant = 'default', className = 
 
   return (
     <article className={`card ${className}`}>
-      <Link href={`/artikel/${article.slug}`} className="card-media" tabIndex={-1} aria-hidden>
+      <Link href={`/article/${article.slug}`} className="card-media" tabIndex={-1} aria-hidden>
         <img src={article.image_url} alt="" loading="lazy" />
         <span
           className="badge"
@@ -53,7 +53,7 @@ export default function ArticleCard({ article, variant = 'default', className = 
         </span>
       </Link>
       <div className="card-body">
-        <Link href={`/artikel/${article.slug}`}>
+        <Link href={`/article/${article.slug}`}>
           <h3 className="card-title">{article.title}</h3>
         </Link>
         <p className="card-excerpt">{article.excerpt}</p>

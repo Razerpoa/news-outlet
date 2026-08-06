@@ -12,7 +12,7 @@ export default function SearchBox({ initial, lang = 'id' }: { initial?: string; 
     e.preventDefault();
     const query = q.trim();
     if (!query) return;
-    router.push(`/cari?q=${encodeURIComponent(query)}`);
+    router.push(`/find?q=${encodeURIComponent(query)}`);
   };
 
   return (

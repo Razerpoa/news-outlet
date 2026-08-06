@@ -49,20 +49,20 @@ export default function MobileMenu({
               {t(lang, 'nav_latest')}
             </Link>
             {categories.map((c) => (
-              <Link key={c.id} href={`/kategori/${c.slug}`} onClick={close}>
+              <Link key={c.id} href={`/category/${c.slug}`} onClick={close}>
                 <span className="dot" style={{ ['--cat-color' as string]: c.color }} />
                 {c.name}
               </Link>
             ))}
             {isLoggedIn ? (
-              <Link href="/tulis" onClick={close}>
+              <Link href="/write" onClick={close}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
                 {t(lang, 'write_news')}
               </Link>
             ) : (
-              <Link href="/masuk" onClick={close}>
+              <Link href="/login" onClick={close}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
                   <polyline points="10 17 15 12 10 7" />
@@ -71,7 +71,7 @@ export default function MobileMenu({
                 {t(lang, 'login_redaksi')}
               </Link>
             )}
-            <Link href="/cari" onClick={close}>
+            <Link href="/find" onClick={close}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.3-4.3" />

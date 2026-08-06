@@ -33,7 +33,7 @@ export default async function Header({ activeSlug }: { activeSlug?: string }) {
         <div className="header-actions">
           {user ? (
             <>
-              <Link href="/tulis" className="write-btn" title={t(lang, 'write_news')}>
+              <Link href="/write" className="write-btn" title={t(lang, 'write_news')}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
@@ -42,7 +42,7 @@ export default async function Header({ activeSlug }: { activeSlug?: string }) {
               <LogoutButton />
             </>
           ) : (
-            <Link href="/masuk" className="write-btn write-btn-ghost" title={t(lang, 'login_redaksi')}>
+            <Link href="/login" className="write-btn write-btn-ghost" title={t(lang, 'login_redaksi')}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
                 <polyline points="10 17 15 12 10 7" />
@@ -52,7 +52,7 @@ export default async function Header({ activeSlug }: { activeSlug?: string }) {
             </Link>
           )}
           <LangToggle lang={lang} />
-          <Link href="/cari" className="icon-btn" aria-label={t(lang, 'search_link_aria')} title={t(lang, 'search_news')}>
+          <Link href="/find" className="icon-btn" aria-label={t(lang, 'search_link_aria')} title={t(lang, 'search_news')}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="11" cy="11" r="7" />
               <path d="m21 21-4.3-4.3" />
@@ -71,7 +71,7 @@ export default async function Header({ activeSlug }: { activeSlug?: string }) {
           {categories.map((c) => (
             <Link
               key={c.id}
-              href={`/kategori/${c.slug}`}
+              href={`/category/${c.slug}`}
               className={`nav-link ${activeSlug === c.slug ? 'active' : ''}`}
             >
               <span className="dot" style={{ ['--cat-color' as string]: c.color }} />

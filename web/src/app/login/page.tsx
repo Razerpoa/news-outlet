@@ -29,7 +29,7 @@ export default async function LoginPage({
 }) {
   const lang = await getLang();
   const user = await getSessionUser();
-  if (user) redirect('/tulis');
+  if (user) redirect('/write');
 
   const { error } = await searchParams;
   const errorKey = loginErrorKey(error);

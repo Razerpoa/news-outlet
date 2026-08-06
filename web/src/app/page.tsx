@@ -50,7 +50,7 @@ export default async function HomePage() {
         <section className="hero">
           <div className="container">
             <div className="hero-grid">
-              <Link href={`/artikel/${hero.slug}`} className="hero-feature">
+              <Link href={`/article/${hero.slug}`} className="hero-feature">
                 <img src={hero.image_url} alt="" />
                 <div className="hero-feature-body">
                   <span className="badge" style={{ ['--cat-color' as string]: hero.category_color }}>
@@ -71,7 +71,7 @@ export default async function HomePage() {
 
               <div className="hero-side">
                 {side.map((a) => (
-                  <Link key={a.id} href={`/artikel/${a.slug}`} className="hero-side-item">
+                  <Link key={a.id} href={`/article/${a.slug}`} className="hero-side-item">
                     <img src={a.image_url} alt="" loading="lazy" />
                     <div className="hero-side-body">
                       <span
@@ -99,7 +99,7 @@ export default async function HomePage() {
             <div className="section">
               <div className="section-head">
                 <h2 className="section-title">{t(lang, 'news_latest')}</h2>
-                <Link href="/kategori/terbaru" className="section-link">
+                <Link href="/category/terbaru" className="section-link">
                   {t(lang, 'view_all')} →
                 </Link>
               </div>
@@ -143,7 +143,7 @@ export default async function HomePage() {
                     <h2 className="section-title" style={{ ['--cat-color' as string]: cat.color }}>
                       {cat.name}
                     </h2>
-                    <Link href={`/kategori/${cat.slug}`} className="section-link">
+                    <Link href={`/category/${cat.slug}`} className="section-link">
                       {t(lang, 'read_more')} →
                     </Link>
                   </div>

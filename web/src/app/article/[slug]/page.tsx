@@ -70,7 +70,7 @@ export default async function ArticlePage({ params }: Props) {
     dateModified: article.published_at,
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${siteUrl}/artikel/${article.slug}`,
+      '@id': `${siteUrl}/article/${article.slug}`,
     },
     keywords: [article.category_name, article.category_slug],
   };
@@ -86,7 +86,7 @@ export default async function ArticlePage({ params }: Props) {
         <nav className="breadcrumb" aria-label="Breadcrumb">
           <Link href="/">{t(lang, 'home')}</Link>
           <span className="sep">/</span>
-          <Link href={`/kategori/${article.category_slug}`}>{article.category_name}</Link>
+          <Link href={`/category/${article.category_slug}`}>{article.category_name}</Link>
           <span className="sep">/</span>
           <span aria-current="page">{article.title.slice(0, 60)}…</span>
         </nav>

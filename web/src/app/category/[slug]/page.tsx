@@ -71,7 +71,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           {totalPages > 1 && (
             <nav className="pagination" aria-label={t(lang, 'page_nav')}>
               <Link
-                href={`/kategori/${slug}?page=${page - 1}`}
+                href={`/category/${slug}?page=${page - 1}`}
                 className={`page-btn ${page <= 1 ? 'disabled-link' : ''}`}
                 aria-disabled={page <= 1}
                 style={page <= 1 ? { pointerEvents: 'none' } : undefined}
@@ -85,7 +85,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                   <span key={p} style={{ display: 'contents' }}>
                     {i > 0 && arr[i - 1] !== p - 1 && <span className="page-btn">…</span>}
                     <Link
-                      href={`/kategori/${slug}?page=${p}`}
+                      href={`/category/${slug}?page=${p}`}
                       className={`page-btn ${p === page ? 'active' : ''}`}
                       aria-current={p === page ? 'page' : undefined}
                     >
@@ -94,7 +94,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
                   </span>
                 ))}
               <Link
-                href={`/kategori/${slug}?page=${page + 1}`}
+                href={`/category/${slug}?page=${page + 1}`}
                 className={`page-btn ${page >= totalPages ? 'disabled-link' : ''}`}
                 aria-disabled={page >= totalPages}
                 style={page >= totalPages ? { pointerEvents: 'none' } : undefined}

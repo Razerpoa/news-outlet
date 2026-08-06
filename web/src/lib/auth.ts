@@ -65,10 +65,10 @@ export async function getSessionUser(): Promise<AuthUser | null> {
   };
 }
 
-/** Untuk halaman server: redirect ke /masuk bila belum login. */
+/** Untuk halaman server: redirect ke /login bila belum login. */
 export async function requireUser(): Promise<AuthUser> {
   const user = await getSessionUser();
-  if (!user) redirect('/masuk');
+  if (!user) redirect('/login');
   return user;
 }
 

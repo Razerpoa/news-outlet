@@ -29,12 +29,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     entries.push(
       ...categories.map((c) => ({
-        url: `${siteUrl}/kategori/${c.slug}`,
+        url: `${siteUrl}/category/${c.slug}`,
         changeFrequency: 'daily' as const,
         priority: 0.8,
       })),
       ...articles.map((a) => ({
-        url: `${siteUrl}/artikel/${a.slug}`,
+        url: `${siteUrl}/article/${a.slug}`,
         lastModified: a.updated,
         changeFrequency: 'weekly' as const,
         priority: 0.7,

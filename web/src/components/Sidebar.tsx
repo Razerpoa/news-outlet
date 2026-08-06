@@ -21,7 +21,7 @@ export default async function Sidebar({
             <li key={a.id} className="trend-item">
               <span className="trend-rank">{String(i + 1).padStart(2, '0')}</span>
               <div>
-                <Link href={`/artikel/${a.slug}`}>
+                <Link href={`/article/${a.slug}`}>
                   <span className="trend-title">{a.title}</span>
                 </Link>
                 <div className="trend-meta">{timeAgo(a.published_at, lang)}</div>
@@ -35,7 +35,7 @@ export default async function Sidebar({
         <h2 className="side-card-title">{t(lang, 'categories')}</h2>
         <div className="chip-list">
           {categories.map((c) => (
-            <Link key={c.id} href={`/kategori/${c.slug}`} className="chip">
+            <Link key={c.id} href={`/category/${c.slug}`} className="chip">
               <span className="dot" style={{ ['--cat-color' as string]: c.color }} />
               {c.name}
             </Link>
