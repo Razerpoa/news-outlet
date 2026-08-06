@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
+import { getSupabase } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
-import { ARTICLE_SELECT, localizeArticle, parseLimit, slugify } from '@/lib/articles';
+import { ARTICLE_FIELDS, flattenArticle, localizeArticle, parseLimit, slugify } from '@/lib/articles';
 import { langFrom } from '@/lib/lang';
 import { translateArticle } from '@/lib/translate';
 
@@ -86,11 +86,12 @@ async function storeRemoteImage(remoteUrl: string): Promise<string> {
 
 /** Hasilkan slug unik dari judul; bila bentrok, tambahkan angka (-2, -3, ...). */
 async function uniqueSlug(base: string): Promise<string> {
+  const supabase = getSupabase();
   const candidate = base || 'artikel';
   let slug = candidate;
   for (let i = 2; i <= 100; i++) {
-    const { rows } = await pool.query('SELECT 1 FROM articles WHERE slug = $1', [slug]);
-    if (rows.length === 0) return slug;
+    const { data } = await supabase.from('articles').select('id').eq('slug', slug).maybeSingle();
+    if (!data) return slug;
     slug = `${candidate}-${i}`;
   }
   return `${candidate}-${Date.now()}`;
@@ -149,8 +150,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Pilih kategori artikel' }, { status: 400 });
     }
 
-    const cat = await pool.query('SELECT id FROM categories WHERE id = $1', [categoryId]);
-    if (cat.rows.length === 0) {
+    const supabase = getSupabase();
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('id', categoryId)
+      .maybeSingle();
+    if (!cat) {
       return NextResponse.json({ error: 'Kategori tidak ditemukan' }, { status: 400 });
     }
 
@@ -171,26 +177,29 @@ export async function POST(req: NextRequest) {
     // artikel tetap terbit dalam bahasa asli).
     const { titleEn, excerptEn, contentEn } = await translateArticle(title, excerpt, content);
 
-    const { rows } = await pool.query(
-      `INSERT INTO articles (slug, title, title_en, excerpt, excerpt_en, content, content_en, category_id, author, image_url, published_at, views, featured)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), 0, false)
-       RETURNING id, slug`,
-      [
+    const { data: inserted, error } = await supabase
+      .from('articles')
+      .insert({
         slug,
         title,
-        titleEn,
+        title_en: titleEn,
         excerpt,
-        excerptEn,
+        excerpt_en: excerptEn,
         content,
-        contentEn,
-        categoryId,
+        content_en: contentEn,
+        category_id: categoryId,
         author,
-        image,
-      ]
-    );
+        image_url: image,
+        published_at: new Date().toISOString(),
+        views: 0,
+        featured: false,
+      })
+      .select('id, slug')
+      .single();
+    if (error) throw error;
 
     return NextResponse.json(
-      { id: rows[0].id, slug: rows[0].slug, translated: titleEn !== null },
+      { id: inserted.id, slug: inserted.slug, translated: titleEn !== null },
       { status: 201 }
     );
   } catch (err) {
@@ -207,27 +216,25 @@ export async function GET(req: NextRequest) {
     const offset = Math.max(parseInt(sp.get('offset') ?? '0', 10) || 0, 0);
     const category = (sp.get('category') ?? '').toString();
 
-    let where = '';
-    const params: unknown[] = [limit, offset];
+    const supabase = getSupabase();
+    let builder = supabase
+      .from('articles')
+      .select(ARTICLE_FIELDS, { count: 'exact' })
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
     if (category) {
-      where = 'WHERE c.slug = $3';
-      params.push(category);
+      builder = builder.eq('categories.slug', category);
     }
+    const { data, error, count } = await builder;
+    if (error) throw error;
+    const items = (data ?? []).map((r) => localizeArticle(flattenArticle(r), lang));
 
-    const { rows } = await pool.query(
-      `${ARTICLE_SELECT} ${where} ORDER BY a.published_at DESC LIMIT $1 OFFSET $2`,
-      params
-    );
-    const items = rows.map((r) => localizeArticle(r, lang));
-
-    const countRes = await pool.query(
-      category
-        ? `SELECT COUNT(*)::int AS total FROM articles a JOIN categories c ON a.category_id = c.id WHERE c.slug = $1`
-        : `SELECT COUNT(*)::int AS total FROM articles`,
-      category ? [category] : []
-    );
-
-    return NextResponse.json({ items, total: countRes.rows[0].total, limit, offset });
+    return NextResponse.json({
+      items,
+      total: count ?? (data?.length ?? 0),
+      limit,
+      offset,
+    });
   } catch (err) {
     console.error('[API ERROR]', err);
     return NextResponse.json({ error: 'Terjadi kesalahan pada server' }, { status: 500 });

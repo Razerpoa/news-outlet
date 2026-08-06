@@ -1,36 +1,28 @@
 import 'server-only';
-import { Pool } from 'pg';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const globalForPg = globalThis as unknown as { _kabarPool?: Pool };
+const globalForSupabase = globalThis as unknown as { _kabarSupabase?: SupabaseClient };
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgres://kabar:kabar_secret@localhost:5432/kabar_nusantara';
-
-// Supabase (host *.supabase.co / *.supabase.com) mewajibkan koneksi SSL.
-// Bila DSN sudah memuat parameter sslmode, biarkan pg menanganinya sendiri.
-const ssl = /sslmode=/.test(connectionString)
-  ? undefined
-  : /supabase\.(co|com)/.test(connectionString)
-    ? { rejectUnauthorized: false }
-    : undefined;
-
-// Paksa IPv4: beberapa host Supabase hanya menerbitkan record AAAA (IPv6)
-// dan jaringan ini tidak dapat menjangkau IPv6 (ENETUNREACH), sama seperti
-// quirk OAuth Google — lihat lib/oauth.ts (family: 4).
-// node-postgres meneruskan `family` ke net.connect, tetapi @types/pg belum
-// mendeklarasikannya — karenanya di-cast.
-const poolConfig = {
-  connectionString,
-  ssl,
-  family: 4,
-  max: 10,
-} as import('pg').PoolConfig;
-
-export const pool = globalForPg._kabarPool ?? new Pool(poolConfig);
-
-if (process.env.NODE_ENV !== 'production') globalForPg._kabarPool = pool;
-
-export async function query(text: string, params?: unknown[]) {
-  return pool.query(text, params);
+/**
+ * Klien Supabase (service role) untuk akses database via PostgREST.
+ *
+ * Dibuat lazy (bukan di modul load) agar file ini aman di-import saat
+ * `docker build` yang tidak memiliki env — error baru muncul ketika klien
+ * benar-benar dipakai (mis. sitemap saat runtime, bukan saat build).
+ *
+ * CATATAN: SUPABASE_SERVICE_ROLE_KEY melewati Row Level Security — jangan
+ * pernah membocorkannya ke client bundle.
+ */
+export function getSupabase(): SupabaseClient {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error('SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY belum diatur di environment');
+  }
+  if (!globalForSupabase._kabarSupabase) {
+    globalForSupabase._kabarSupabase = createClient(url, key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+  return globalForSupabase._kabarSupabase;
 }

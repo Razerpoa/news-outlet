@@ -1,19 +1,61 @@
 import type { Lang } from './lang';
+import { getSupabase } from '@/lib/db';
 
-export const ARTICLE_SELECT = `
-  SELECT a.id, a.slug, a.title, a.title_en, a.excerpt, a.excerpt_en,
-         a.content, a.content_en, a.author, a.image_url,
-         a.published_at, a.views, a.featured, a.created_at,
-         c.id   AS category_id,
-         c.slug AS category_slug,
-         c.name AS category_name,
-         c.name_en AS category_name_en,
-         c.color AS category_color
-  FROM articles a
-  JOIN categories c ON a.category_id = c.id
-`;
+/**
+ * Kolom artikel untuk `.select()` PostgREST — kategori ikut ter-embed
+ * (relasi many-to-one). Hasilnya di-*flatten* lewat `flattenArticle()`
+ * menjadi bentuk kolom lama (category_id, category_slug, ...).
+ */
+export const ARTICLE_FIELDS = `
+  id, slug, title, title_en, excerpt, excerpt_en, content, content_en,
+  author, image_url, published_at, views, featured, created_at,
+  categories (id, slug, name, name_en, color)
+`
+  .replace(/\s+/g, ' ')
+  .trim();
 
 type ArticleRow = Record<string, unknown>;
+
+/**
+ * Ratakan baris PostgREST (categories tersarang) menjadi bentuk kolom
+ * kategori datar seperti hasil JOIN SQL sebelumnya.
+ * Menerima `unknown` karena supabase-js mengetik data dari select string
+ * non-literal sebagai `GenericStringError`.
+ */
+export function flattenArticle(row: unknown): ArticleRow {
+  const r = (row ?? {}) as Record<string, unknown>;
+  const categories = r.categories as Record<string, unknown> | null | undefined;
+  const { categories: _drop, ...rest } = r;
+  return {
+    ...rest,
+    category_id: (categories?.id as number | undefined) ?? null,
+    category_slug: (categories?.slug as string | undefined) ?? null,
+    category_name: (categories?.name as string | undefined) ?? null,
+    category_name_en: (categories?.name_en as string | undefined) ?? null,
+    category_color: (categories?.color as string | undefined) ?? null,
+  };
+}
+
+/**
+ * Tambah views secara atomik lewat fungsi SQL `increment_article_views`
+ * (didefinisikan di scripts/schema.sql / seed). Bila fungsi belum ada di
+ * database (skema lama), fallback ke baca-lalu-update (non-atomik).
+ */
+export async function incrementArticleViews(id: number): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await supabase.rpc('increment_article_views', { row_id: id });
+  if (!error) return;
+
+  const { data } = await supabase
+    .from('articles')
+    .select('views')
+    .eq('id', id)
+    .maybeSingle();
+  await supabase
+    .from('articles')
+    .update({ views: (Number(data?.views) || 0) + 1 })
+    .eq('id', id);
+}
 
 /** Ganti kolom utama dengan versi bahasa Inggris bila tersedia (mutasi baris). */
 export function localizeArticle(row: ArticleRow, lang: Lang): ArticleRow {

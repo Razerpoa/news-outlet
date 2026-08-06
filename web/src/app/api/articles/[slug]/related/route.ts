@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/db';
-import { ARTICLE_SELECT, localizeArticle, parseLimit } from '@/lib/articles';
+import { getSupabase } from '@/lib/db';
+import { ARTICLE_FIELDS, flattenArticle, localizeArticle, parseLimit } from '@/lib/articles';
 import { langFrom } from '@/lib/lang';
 
 export const dynamic = 'force-dynamic';
@@ -13,15 +13,25 @@ export async function GET(
     const { slug } = await params;
     const lang = langFrom(req.nextUrl.searchParams.get('lang'));
     const limit = parseLimit(req.nextUrl.searchParams.get('limit'), 4, 8);
-    const { rows } = await pool.query(
-      `${ARTICLE_SELECT}
-       WHERE a.category_id = (SELECT category_id FROM articles WHERE slug = $1)
-         AND a.slug <> $1
-       ORDER BY a.published_at DESC
-       LIMIT $2`,
-      [slug, limit]
-    );
-    return NextResponse.json(rows.map((r) => localizeArticle(r, lang)));
+    const supabase = getSupabase();
+
+    const { data: current } = await supabase
+      .from('articles')
+      .select('category_id')
+      .eq('slug', slug)
+      .maybeSingle();
+    if (!current?.category_id) return NextResponse.json([]);
+
+    const { data, error } = await supabase
+      .from('articles')
+      .select(ARTICLE_FIELDS)
+      .eq('category_id', current.category_id)
+      .neq('slug', slug)
+      .order('published_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    const items = (data ?? []).map((r) => localizeArticle(flattenArticle(r), lang));
+    return NextResponse.json(items);
   } catch (err) {
     console.error('[API ERROR]', err);
     return NextResponse.json({ error: 'Terjadi kesalahan pada server' }, { status: 500 });

@@ -3,111 +3,48 @@
  * Idempotent: aman dijalankan berulang kali.
  * Menjalankan: npm run seed (atau node scripts/seed.mjs)
  *
+ * Akses data memakai Supabase (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)
+ * via PostgREST (REST API). Skema database dibuat otomatis bila DATABASE_URL
+ * tersedia; bila tidak, tempel isi scripts/schema.sql ke SQL editor Supabase
+ * sekali saja (skema idempotent, aman dijalankan ulang).
+ *
  * Artikel di-seed dalam dua bahasa: kolom title_en/excerpt_en/content_en berisi
  * terjemahan Inggris yang dikurasi (bukan hasil API), sehingga mode EN langsung
- * tersedia tanpa jaringan. Kolom *_en di-backfill lewat ON CONFLICT DO UPDATE.
+ * tersedia tanpa jaringan. Artikel yang sudah ada hanya di-backfill kolom *_en
+ * (kolom Indonesia + views/featured/published_at dipertahankan).
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import { createClient } from '@supabase/supabase-js';
 
 const { Pool } = pg;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SCHEMA_SQL_PATH = path.join(__dirname, 'schema.sql');
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgres://kabar:kabar_secret@localhost:5432/kabar_nusantara';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const DATABASE_URL = process.env.DATABASE_URL || '';
 
-// Supabase (host *.supabase.co / *.supabase.com) mewajibkan SSL — aktifkan
-// otomatis kecuali DSN sudah menentukan sslmode sendiri.
-const ssl = /sslmode=/.test(connectionString)
-  ? undefined
-  : /supabase\.(co|com)/.test(connectionString)
-    ? { rejectUnauthorized: false }
-    : undefined;
-
-// Paksa IPv4 (family: 4) — beberapa host Supabase hanya menerbitkan AAAA
-// (IPv6) yang tidak terjangkau di jaringan ini (ENETUNREACH).
-const pool = new Pool({
-  connectionString,
-  ssl,
-  family: 4,
-  max: 5,
-});
+// Klien Supabase (service role) — dibuat lazy agar error yang jelas muncul
+// saat env tidak lengkap, bukan saat import modul.
+function getSupabase() {
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY wajib diisi (lihat .env.example)');
+  }
+  return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 /* ---------------------------------- Skema --------------------------------- */
 
-const SCHEMA = `
-CREATE TABLE IF NOT EXISTS categories (
-  id      SERIAL PRIMARY KEY,
-  slug    TEXT UNIQUE NOT NULL,
-  name    TEXT NOT NULL,
-  name_en TEXT,
-  color   TEXT NOT NULL DEFAULT '#c0392b'
-);
-
-CREATE TABLE IF NOT EXISTS articles (
-  id           SERIAL PRIMARY KEY,
-  slug         TEXT UNIQUE NOT NULL,
-  title        TEXT NOT NULL,
-  title_en     TEXT,
-  excerpt      TEXT NOT NULL,
-  excerpt_en   TEXT,
-  content      TEXT NOT NULL,
-  content_en   TEXT,
-  category_id  INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-  author       TEXT NOT NULL,
-  image_url    TEXT NOT NULL,
-  published_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  views        INTEGER NOT NULL DEFAULT 0,
-  featured     BOOLEAN NOT NULL DEFAULT false,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS idx_articles_category   ON articles(category_id);
-CREATE INDEX IF NOT EXISTS idx_articles_published  ON articles(published_at DESC);
-CREATE INDEX IF NOT EXISTS idx_articles_views      ON articles(views DESC);
-
--- Pengguna yang pernah masuk lewat Google OAuth (publikasi hanya untuk penulis terdaftar)
-CREATE TABLE IF NOT EXISTS users (
-  id         SERIAL PRIMARY KEY,
-  email      TEXT NOT NULL,
-  name       TEXT,
-  avatar_url TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- Unik email dijamin index (dibuat ulang idempotent via MIGRATIONS agar
--- database lama yang masih memakai skema password ikut tercakup)
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
-
--- Daftar penulis yang diizinkan (authorized writers). Login Google hanya berhasil
--- bila email pengguna terdaftar di tabel ini.
-CREATE TABLE IF NOT EXISTS authors (
-  id         SERIAL PRIMARY KEY,
-  email      TEXT UNIQUE NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- Sesi login: token acak disimpan sebagai SHA-256 hash (token asli hanya di cookie)
-CREATE TABLE IF NOT EXISTS sessions (
-  token_hash TEXT PRIMARY KEY,
-  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  expires_at TIMESTAMPTZ NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_sessions_user    ON sessions(user_id);
-CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
-`;
-
-// Migrasi database lama (username/password → email Google): idempotent, aman
-// dijalankan berulang. Pengguna lama tanpa email dihapus (sesi ikut terhapus).
-const MIGRATIONS = `
-ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
-DELETE FROM users WHERE email IS NULL;
-ALTER TABLE users DROP COLUMN IF EXISTS username;
-ALTER TABLE users DROP COLUMN IF EXISTS password_hash;
-`;
+// Definisi skema + migrasi dipindah ke scripts/schema.sql (sumber tunggal) —
+// bisa dijalankan dari seed saat DATABASE_URL tersedia, atau ditempel ke SQL
+// editor Supabase. Termasuk: tabel categories/articles/users/authors/sessions,
+// index, migrasi lama (username/password → email Google), dan fungsi
+// increment_article_views (dipakai API untuk menambah views secara atomik).
 
 /* -------------------------------- Kategori --------------------------------- */
 
@@ -658,59 +595,91 @@ const AUTHOR_EMAILS = [...new Set([...DEFAULT_AUTHOR_EMAILS, ...EXTRA_AUTHOR_EMA
 /* ---------------------------------- Seed ---------------------------------- */
 
 async function main() {
-  console.log('> Membuat skema database...');
-  await pool.query(SCHEMA);
-  await pool.query(MIGRATIONS);
+  const supabase = getSupabase();
+
+  // --- Skema (opsional): dibuat otomatis hanya bila DATABASE_URL tersedia ---
+  let pool = null;
+  if (DATABASE_URL) {
+    console.log('> Membuat skema database (DATABASE_URL tersedia)...');
+    const schemaSql = fs.readFileSync(SCHEMA_SQL_PATH, 'utf8');
+    // Supabase (host *.supabase.co / *.supabase.com) mewajibkan SSL — aktifkan
+    // otomatis kecuali DSN sudah menentukan sslmode sendiri.
+    const ssl = /sslmode=/.test(DATABASE_URL)
+      ? undefined
+      : /supabase\.(co|com)/.test(DATABASE_URL)
+        ? { rejectUnauthorized: false }
+        : undefined;
+    // Paksa IPv4 (family: 4) — beberapa host Supabase hanya menerbitkan AAAA
+    // (IPv6) yang tidak terjangkau di jaringan ini (ENETUNREACH).
+    pool = new Pool({ connectionString: DATABASE_URL, ssl, family: 4, max: 5 });
+    await pool.query(schemaSql);
+  } else {
+    console.log('> DATABASE_URL tidak diatur — lewati pembuatan skema.');
+    console.log(`> Bila skema belum ada, tempel isi ${SCHEMA_SQL_PATH} di SQL editor Supabase.`);
+  }
 
   console.log('> Menyiapkan kategori...');
-  for (const c of CATEGORIES) {
-    await pool.query(
-      `INSERT INTO categories (slug, name, name_en, color) VALUES ($1, $2, $3, $4)
-       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, name_en = EXCLUDED.name_en, color = EXCLUDED.color`,
-      [c.slug, c.name, c.name_en, c.color]
-    );
-  }
+  const { data: catRows, error: catErr } = await supabase
+    .from('categories')
+    .upsert(CATEGORIES, { onConflict: 'slug' })
+    .select('id, slug');
+  if (catErr) throw catErr;
+  const catIdBySlug = new Map((catRows ?? []).map((c) => [c.slug, c.id]));
 
   console.log('> Menyiapkan daftar penulis yang diizinkan (Google OAuth)...');
-  await pool.query('DELETE FROM sessions WHERE expires_at < now()');
-  for (const email of AUTHOR_EMAILS) {
-    await pool.query(
-      `INSERT INTO authors (email) VALUES ($1)
-       ON CONFLICT (email) DO NOTHING`,
-      [email]
-    );
-  }
+  const { error: sessionsErr } = await supabase
+    .from('sessions')
+    .delete()
+    .lt('expires_at', new Date().toISOString());
+  if (sessionsErr) throw sessionsErr;
+  const { error: authorsErr } = await supabase
+    .from('authors')
+    .upsert(AUTHOR_EMAILS.map((email) => ({ email })), {
+      onConflict: 'email',
+      ignoreDuplicates: true,
+    });
+  if (authorsErr) throw authorsErr;
   console.log(`> Penulis yang diizinkan: ${AUTHOR_EMAILS.join(', ')} (tambah via env AUTHOR_EMAILS)`);
 
   const rng = mulberry32(20260731);
   let inserted = 0;
 
+  // Slug yang sudah ada — artikel lama hanya di-backfill kolom *_en (kolom
+  // Indonesia, published_at, views, featured dipertahankan); artikel baru
+  // di-insert penuh. (Setara dengan ON CONFLICT DO UPDATE yang lama.)
+  const { data: existingRows } = await supabase.from('articles').select('slug');
+  const existingSlugs = new Set((existingRows ?? []).map((r) => r.slug));
+
   const insertArticle = async (a) => {
-    const res = await pool.query(
-      `INSERT INTO articles (slug, title, title_en, excerpt, excerpt_en, content, content_en, category_id, author, image_url, published_at, views, featured)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, (SELECT id FROM categories WHERE slug = $8), $9, $10, $11, $12, $13)
-       ON CONFLICT (slug) DO UPDATE SET
-         title_en   = EXCLUDED.title_en,
-         excerpt_en = EXCLUDED.excerpt_en,
-         content_en = EXCLUDED.content_en
-       RETURNING id, (xmax = 0) AS inserted`,
-      [
-        a.slug,
-        a.title,
-        a.titleEn ?? null,
-        a.excerpt,
-        a.excerptEn ?? null,
-        a.content,
-        a.contentEn ?? null,
-        a.category,
-        a.author,
-        a.image,
-        a.publishedAt.toISOString(),
-        a.views,
-        a.featured,
-      ]
-    );
-    if (res.rows[0]?.inserted) inserted += 1;
+    if (existingSlugs.has(a.slug)) {
+      const { error } = await supabase
+        .from('articles')
+        .update({
+          title_en: a.titleEn ?? null,
+          excerpt_en: a.excerptEn ?? null,
+          content_en: a.contentEn ?? null,
+        })
+        .eq('slug', a.slug);
+      if (error) throw error;
+      return;
+    }
+    const { error } = await supabase.from('articles').insert({
+      slug: a.slug,
+      title: a.title,
+      title_en: a.titleEn ?? null,
+      excerpt: a.excerpt,
+      excerpt_en: a.excerptEn ?? null,
+      content: a.content,
+      content_en: a.contentEn ?? null,
+      category_id: catIdBySlug.get(a.category),
+      author: a.author,
+      image_url: a.image,
+      published_at: a.publishedAt.toISOString(),
+      views: a.views,
+      featured: a.featured,
+    });
+    if (error) throw error;
+    inserted += 1;
   };
 
   console.log('> Menyisipkan artikel utama...');
@@ -769,11 +738,15 @@ async function main() {
   }
   await Promise.all(fillerJobs);
 
-  const count = await pool.query('SELECT COUNT(*)::int AS total FROM articles');
-  const catCount = await pool.query('SELECT COUNT(*)::int AS total FROM categories');
-  console.log(`> Selesai. ${catCount.rows[0].total} kategori, ${count.rows[0].total} artikel (baru: ${inserted}).`);
+  const { count: total } = await supabase
+    .from('articles')
+    .select('id', { count: 'exact', head: true });
+  const { count: catTotal } = await supabase
+    .from('categories')
+    .select('id', { count: 'exact', head: true });
+  console.log(`> Selesai. ${catTotal} kategori, ${total} artikel (baru: ${inserted}).`);
 
-  await pool.end();
+  if (pool) await pool.end();
 }
 
 main().catch((err) => {

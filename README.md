@@ -43,20 +43,29 @@ docker compose up --build
 #    Login → http://localhost:3000/masuk
 ```
 
-Container `web` otomatis membuat skema dan mengisi data awal (idempotent) sebelum mulai melayani. **Login redaksi** memakai **Google OAuth** — hanya email yang terdaftar di tabel `authors` yang boleh masuk. Seed mendaftarkan `fathandwipayana@gmail.com` secara otomatis.
+Container `web` otomatis membuat skema (bila `DATABASE_URL` diisi) dan mengisi data awal (idempotent) sebelum mulai melayani. Tanpa `DATABASE_URL`, tempel `web/scripts/schema.sql` ke SQL editor Supabase sekali — setelah itu aplikasi berjalan hanya dengan `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`. **Login redaksi** memakai **Google OAuth** — hanya email yang terdaftar di tabel `authors` yang boleh masuk. Seed mendaftarkan `fathandwipayana@gmail.com` secara otomatis.
 
-### Setup Supabase (database)
+### Setup Supabase (database + API)
 
 1. Buat project gratis di [supabase.com](https://supabase.com).
-2. Buka **Project Settings → Database → Connection string**.
-3. Salin connection string **Transaction pooler** (port 6543) ke `DATABASE_URL` di `.env`:
+2. Buka **Project Settings → API**, salin **Project URL** dan **Service role key** ke `.env`:
+
+```bash
+SUPABASE_URL=https://<ref>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+```
+
+   Service role melewati Row Level Security — simpan rahasia, hanya dipakai server-side.
+3. Buat skema database (sekali) — pilih salah satu:
+   - Tempel isi `web/scripts/schema.sql` ke **SQL editor** Supabase → Run, atau
+   - Isi `DATABASE_URL` (Transaction pooler, port 6543) agar seed membuat skema otomatis:
 
 ```bash
 DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres
 ```
 
-   SSL otomatis aktif (host `*.supabase.co` / `*.supabase.com`); DSN boleh juga memakai `?sslmode=require`.
-4. Skema + seed dijalankan otomatis saat container `web` start (idempotent). Manual:
+   SSL otomatis aktif (host `*.supabase.co` / `*.supabase.com`); DSN boleh juga memakai `?sslmode=require`. `DATABASE_URL` bersifat opsional — hanya dipakai seed untuk DDL; aplikasi berjalan hanya dengan `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.
+4. Seed data (idempotent) dijalankan otomatis saat container `web` start. Manual:
 
 ```bash
 docker compose exec web node scripts/seed.mjs
@@ -118,12 +127,13 @@ news-outlet/
 └── web/                  # Next.js 16 (App Router + TypeScript)
     ├── Dockerfile        # multi-stage, output standalone
     ├── scripts/
-    │   └── seed.mjs      # skema + seed data Indonesia (idempotent)
+    │   ├── schema.sql    # skema + migrasi (tempel di SQL editor Supabase, sekali)
+    │   └── seed.mjs      # seed data Indonesia (idempotent, via Supabase API)
     └── src/
         ├── app/          # halaman: /, /artikel/[slug], /kategori/[slug], /cari, /tulis, /masuk
         │   └── api/      # Route Handlers (REST API bawaan Next.js)
         ├── components/   # Header, Footer, ArticleCard, Sidebar, dll.
-        └── lib/          # api client, db pool, tipe, util tanggal Indonesia
+        └── lib/          # api client, klien Supabase (PostgREST), tipe, util tanggal Indonesia
 ```
 
 ## 🎨 Keputusan Desain

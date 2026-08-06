@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { query } from '@/lib/db';
+import { getSupabase } from '@/lib/db';
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
@@ -15,17 +15,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
+    const supabase = getSupabase();
     const [articlesRes, categoriesRes] = await Promise.all([
-      query(
-        `SELECT slug, GREATEST(published_at, created_at) AS updated
-           FROM articles
-          ORDER BY published_at DESC`
-      ),
-      query(`SELECT slug FROM categories ORDER BY id`),
+      supabase
+        .from('articles')
+        .select('slug, published_at, created_at')
+        .order('published_at', { ascending: false }),
+      supabase.from('categories').select('slug').order('id', { ascending: true }),
     ]);
 
-    const articles = articlesRes.rows as { slug: string; updated: string }[];
-    const categories = categoriesRes.rows as { slug: string }[];
+    const articles = (articlesRes.data ?? []) as {
+      slug: string;
+      published_at: string;
+      created_at: string;
+    }[];
+    const categories = (categoriesRes.data ?? []) as { slug: string }[];
 
     entries.push(
       ...categories.map((c) => ({
@@ -35,7 +39,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
       ...articles.map((a) => ({
         url: `${siteUrl}/article/${a.slug}`,
-        lastModified: a.updated,
+        lastModified: new Date(
+          Math.max(Date.parse(a.published_at), Date.parse(a.created_at))
+        ).toISOString(),
         changeFrequency: 'weekly' as const,
         priority: 0.7,
       }))

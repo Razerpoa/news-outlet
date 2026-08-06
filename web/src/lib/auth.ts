@@ -2,7 +2,7 @@ import 'server-only';
 import { createHash, randomBytes } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { query } from '@/lib/db';
+import { getSupabase } from '@/lib/db';
 
 export const SESSION_COOKIE = 'kn_session';
 export const OAUTH_STATE_COOKIE = 'kn_oauth_state';
@@ -22,12 +22,14 @@ function sha256Hex(input: string): string {
 /** Buat sesi baru di DB, kembalikan token asli (hanya token asli yang masuk cookie). */
 export async function createSession(userId: number): Promise<string> {
   const token = randomBytes(32).toString('hex');
-  await query('DELETE FROM sessions WHERE expires_at < now()');
-  await query(
-    `INSERT INTO sessions (token_hash, user_id, expires_at)
-     VALUES ($1, $2, now() + make_interval(secs => $3))`,
-    [sha256Hex(token), userId, SESSION_TTL_MS / 1000]
-  );
+  const supabase = getSupabase();
+  await supabase.from('sessions').delete().lt('expires_at', new Date().toISOString());
+  const { error } = await supabase.from('sessions').insert({
+    token_hash: sha256Hex(token),
+    user_id: userId,
+    expires_at: new Date(Date.now() + SESSION_TTL_MS).toISOString(),
+  });
+  if (error) throw error;
   return token;
 }
 
@@ -49,19 +51,20 @@ export async function getSessionUser(): Promise<AuthUser | null> {
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
-  const { rows } = await query(
-    `SELECT u.id, u.email, u.name, u.avatar_url
-     FROM sessions s
-     JOIN users u ON u.id = s.user_id
-     WHERE s.token_hash = $1 AND s.expires_at > now()`,
-    [sha256Hex(token)]
-  );
-  if (rows.length === 0) return null;
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from('sessions')
+    .select('users (id, email, name, avatar_url)')
+    .eq('token_hash', sha256Hex(token))
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle();
+  const user = data?.users as AuthUser | undefined;
+  if (!user) return null;
   return {
-    id: rows[0].id,
-    email: rows[0].email,
-    name: rows[0].name,
-    avatar_url: rows[0].avatar_url,
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    avatar_url: user.avatar_url,
   };
 }
 
@@ -77,7 +80,8 @@ export async function destroySession(): Promise<void> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (token) {
-    await query('DELETE FROM sessions WHERE token_hash = $1', [sha256Hex(token)]);
+    const supabase = getSupabase();
+    await supabase.from('sessions').delete().eq('token_hash', sha256Hex(token));
   }
   store.set(SESSION_COOKIE, '', { path: '/', maxAge: 0 });
 }
@@ -86,8 +90,13 @@ export async function destroySession(): Promise<void> {
 
 /** Cek apakah email terdaftar sebagai penulis yang diizinkan (tabel authors). */
 export async function isAuthorizedWriter(email: string): Promise<boolean> {
-  const { rows } = await query('SELECT 1 FROM authors WHERE email = $1', [email.toLowerCase()]);
-  return rows.length > 0;
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from('authors')
+    .select('id')
+    .eq('email', email.toLowerCase())
+    .maybeSingle();
+  return data !== null;
 }
 
 /**
@@ -101,14 +110,14 @@ export async function authorizeGoogleUser(
 ): Promise<AuthUser | null> {
   if (!(await isAuthorizedWriter(email))) return null;
 
-  const { rows } = await query(
-    `INSERT INTO users (email, name, avatar_url) VALUES ($1, $2, $3)
-     ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, avatar_url = EXCLUDED.avatar_url
-     RETURNING id, email, name, avatar_url`,
-    [email.toLowerCase(), name, avatarUrl]
-  );
-  const row = rows[0];
-  return { id: row.id, email: row.email, name: row.name, avatar_url: row.avatar_url };
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('users')
+    .upsert({ email: email.toLowerCase(), name, avatar_url: avatarUrl }, { onConflict: 'email' })
+    .select('id, email, name, avatar_url')
+    .single();
+  if (error || !data) return null;
+  return { id: data.id, email: data.email, name: data.name, avatar_url: data.avatar_url };
 }
 
 /** State acak untuk mencegah serangan CSRF pada alur OAuth. */

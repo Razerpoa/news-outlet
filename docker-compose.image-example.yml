@@ -8,8 +8,12 @@ services:
     env_file:
       - .env
     environment:
-      # Database = Supabase (PostgreSQL terkelola) — isi DATABASE_URL di .env (lihat .env.example)
-      DATABASE_URL: ${DATABASE_URL}
+      # Database = Supabase via API (PostgREST). Isi SUPABASE_URL dan
+      # SUPABASE_SERVICE_ROLE_KEY di .env (lihat .env.example).
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      # Opsional — hanya dipakai seed untuk auto-buat skema saat start.
+      DATABASE_URL: ${DATABASE_URL:-}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
