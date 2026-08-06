@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { query } from '@/lib/db';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 // ISR: sitemap di-refresh berkala di runtime agar artikel baru cepat terindeks.
 // Catatan: saat `docker build` tidak ada DB yang bisa diakses, sehingga kueri

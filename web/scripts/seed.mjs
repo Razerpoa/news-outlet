@@ -11,10 +11,24 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
+const connectionString =
+  process.env.DATABASE_URL ||
+  'postgres://kabar:kabar_secret@localhost:5432/kabar_nusantara';
+
+// Supabase (host *.supabase.co / *.supabase.com) mewajibkan SSL — aktifkan
+// otomatis kecuali DSN sudah menentukan sslmode sendiri.
+const ssl = /sslmode=/.test(connectionString)
+  ? undefined
+  : /supabase\.(co|com)/.test(connectionString)
+    ? { rejectUnauthorized: false }
+    : undefined;
+
+// Paksa IPv4 (family: 4) — beberapa host Supabase hanya menerbitkan AAAA
+// (IPv6) yang tidak terjangkau di jaringan ini (ENETUNREACH).
 const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ||
-    'postgres://kabar:kabar_secret@localhost:5432/kabar_nusantara',
+  connectionString,
+  ssl,
+  family: 4,
   max: 5,
 });
 

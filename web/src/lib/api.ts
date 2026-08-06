@@ -3,7 +3,7 @@ import type { Lang } from './lang';
 
 // Fetch server-side memerlukan URL absolut (relative URL gagal di luar request context,
 // mis. saat static generation). Route handlers berada di origin yang sama dengan web.
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 const langQ = (lang?: Lang) => (lang ? `&lang=${lang}` : '');
 

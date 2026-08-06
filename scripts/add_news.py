@@ -137,7 +137,16 @@ def normalize_item(item: dict[str, Any], index: int, mode: str) -> dict[str, Any
 
 
 def parse_db_url(database_url: str) -> str:
-    return database_url or os.environ.get("DATABASE_URL", "postgres://kabar:kabar_secret@localhost:5432/kabar_nusantara")
+    url = database_url or os.environ.get(
+        "DATABASE_URL",
+        "postgres://kabar:kabar_secret@localhost:5432/kabar_nusantara",
+    )
+    # Supabase (host *.supabase.co / *.supabase.com) mewajibkan SSL —
+    # tambahkan sslmode=require ke DSN bila belum ada.
+    if "supabase" in url and "sslmode=" not in url:
+        sep = "&" if "?" in url else "?"
+        url = f"{url}{sep}sslmode=require"
+    return url
 
 
 def ensure_db_dep() -> tuple[str, Any]:
@@ -236,7 +245,7 @@ def db_insert(records: list[dict[str, Any]], database_url: str) -> None:
 
 def api_insert(records: list[dict[str, Any]], api_url: str, cookie_header: str) -> None:
     if not api_url:
-        api_url = os.environ.get("NEXT_PUBLIC_SITE_URL", "http://localhost:3000") + "/api/articles"
+        api_url = os.environ.get("NEXT_PUBLIC_APP_URL", "http://localhost:3000") + "/api/articles"
 
     for index, item in enumerate(records):
         payload = normalize_item(item, index, "api")
@@ -273,7 +282,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--file", required=True, help="Path to a JSON file containing the article payload.")
     parser.add_argument("--mode", choices=["db", "api"], default="db", help="Write directly to Postgres or use the web API route.")
     parser.add_argument("--database-url", default=None, help="Optional PostgreSQL DSN; defaults to DATABASE_URL.")
-    parser.add_argument("--api-url", default=None, help="API endpoint to POST to; defaults to SITE_URL/api/articles.")
+    parser.add_argument("--api-url", default=None, help="API endpoint to POST to; defaults to NEXT_PUBLIC_APP_URL/api/articles.")
     parser.add_argument("--cookie", default=None, help="Required in API mode; example: 'kn_session=...'.")
     return parser
 

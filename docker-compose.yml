@@ -1,26 +1,6 @@
 name: kabar-nusantara
 
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: kn-db
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-kabar}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kabar_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-kabar_nusantara}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kabar} -d ${POSTGRES_DB:-kabar_nusantara}"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-
   web:
     image: razorcut777/drekszone:latest
     build:
@@ -30,8 +10,9 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-kabar}:${POSTGRES_PASSWORD:-kabar_secret}@db:5432/${POSTGRES_DB:-kabar_nusantara}
-      NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
+      # Database = Supabase (PostgreSQL terkelola) — isi DATABASE_URL di .env (lihat .env.example)
+      DATABASE_URL: ${DATABASE_URL}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       # Login redaksi via Google OAuth — isi kredensial di .env (lihat .env.example)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
@@ -39,24 +20,6 @@ services:
       AUTHOR_EMAILS: ${AUTHOR_EMAILS:-}
     ports:
       - "${WEB_PORT:-3000}:3000"
-    depends_on:
-      db:
-        condition: service_healthy
-
-  # Alat manajemen DB (Adminer) — hanya terikat ke localhost host, tidak
-  # diekspos ke jaringan. Untuk akses jarak jauh gunakan SSH tunnel.
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
-
-volumes:
-  pgdata:
 
 # MTU jaringan Docker disesuaikan dengan uplink host (mis. VPN/tunnel dengan
 # MTU 1420). Bila MTU container 1500 > MTU uplink, paket besar (mis. handshake

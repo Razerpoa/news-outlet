@@ -6,7 +6,7 @@ import { t } from '@/lib/lang';
 import { SITE_BRAND_NAME } from '@/lib/brand';
 import './globals.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getLang();

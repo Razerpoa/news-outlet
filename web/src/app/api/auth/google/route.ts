@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createOAuthState, setOAuthStateCookie } from '@/lib/auth';
-import { googleAuthUrl, SITE_URL } from '@/lib/oauth';
+import { googleAuthUrl, APP_URL } from '@/lib/oauth';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ export async function GET() {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(`${SITE_URL}/login?error=missing_config`);
+    return NextResponse.redirect(`${APP_URL}/login?error=missing_config`);
   }
 
   const state = createOAuthState();

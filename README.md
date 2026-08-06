@@ -1,6 +1,6 @@
 # 📰 KabarNusantara
 
-Portal berita Indonesia (gaya Kompas) yang menekankan **keterbacaan** (readability) dan **estetika** — responsif untuk ponsel maupun desktop. Dibangun dengan **Next.js** (App Router + Route Handlers) dan **PostgreSQL**, semuanya berjalan di **Docker**.
+Portal berita Indonesia (gaya Kompas) yang menekankan **keterbacaan** (readability) dan **estetika** — responsif untuk ponsel maupun desktop. Dibangun dengan **Next.js** (App Router + Route Handlers) dan **Supabase** (PostgreSQL terkelola).
 
 ## ✨ Fitur
 
@@ -11,20 +11,20 @@ Portal berita Indonesia (gaya Kompas) yang menekankan **keterbacaan** (readabili
 - 🔍 **Pencarian** — cari judul, ringkasan, dan isi artikel
 - 🌗 **Mode gelap/terang** — tersimpan di perangkat, mengikuti preferensi sistem
 - 📱 **Responsif penuh** — menu mobile, grid adaptif, hingga layar 320 px
-- 🗃️ **PostgreSQL** — 9 kategori, 57+ artikel dwibahasa Indonesia/Inggris (seed otomatis)
+- 🗃️ **Supabase (PostgreSQL)** — 9 kategori, 57+ artikel dwibahasa Indonesia/Inggris (seed otomatis)
 
 ## 🏗️ Arsitektur
 
 ```mermaid
 graph LR
   User[Pengunjung] --> Web[Next.js :3000]
-  Web -->|Route Handlers /api/*| DB[(PostgreSQL :5432)]
+  Web -->|Route Handlers /api/*| DB[(Supabase)]
 ```
 
 | Layanan | Teknologi | Port |
 | --- | --- | --- |
 | `web` | Next.js 16 (App Router, SSR/ISR, Route Handlers) | 3000 |
-| `db` | PostgreSQL 16 | 5432 |
+| `db` | Supabase (PostgreSQL terkelola) | cloud |
 
 > API REST kini menjadi **Route Handlers** bawaan Next.js (`web/src/app/api/`) — tidak ada service terpisah, sehingga cukup satu container untuk web + API.
 
@@ -44,6 +44,23 @@ docker compose up --build
 ```
 
 Container `web` otomatis membuat skema dan mengisi data awal (idempotent) sebelum mulai melayani. **Login redaksi** memakai **Google OAuth** — hanya email yang terdaftar di tabel `authors` yang boleh masuk. Seed mendaftarkan `fathandwipayana@gmail.com` secara otomatis.
+
+### Setup Supabase (database)
+
+1. Buat project gratis di [supabase.com](https://supabase.com).
+2. Buka **Project Settings → Database → Connection string**.
+3. Salin connection string **Transaction pooler** (port 6543) ke `DATABASE_URL` di `.env`:
+
+```bash
+DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres
+```
+
+   SSL otomatis aktif (host `*.supabase.co` / `*.supabase.com`); DSN boleh juga memakai `?sslmode=require`.
+4. Skema + seed dijalankan otomatis saat container `web` start (idempotent). Manual:
+
+```bash
+docker compose exec web node scripts/seed.mjs
+```
 
 ### Setup Google OAuth
 
@@ -69,8 +86,7 @@ AUTHOR_EMAILS=penulis@contoh.com,kontributor@contoh.com
 ```bash
 docker compose up -d          # jalankan di latar belakang
 docker compose logs -f web    # lihat log web
-docker compose down           # hentikan layanan
-docker compose down -v        # hentikan + hapus data PostgreSQL
+docker compose down           # hentikan layanan (data tetap aman di Supabase)
 docker compose exec web node scripts/seed.mjs   # seed ulang (idempotent)
 ```
 

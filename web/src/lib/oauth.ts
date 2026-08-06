@@ -2,8 +2,8 @@ import 'server-only';
 import { request as httpsRequest } from 'node:https';
 
 // Origin absolut situs — dipakai sebagai redirect_uri OAuth Google.
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
+export const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 export const GOOGLE_REDIRECT_PATH = '/api/auth/google/callback';
 
@@ -61,7 +61,7 @@ function requestJson(
 
 /** Redirect URI yang harus didaftarkan di Google Cloud Console. */
 export function googleRedirectUri(): string {
-  return `${SITE_URL}${GOOGLE_REDIRECT_PATH}`;
+  return `${APP_URL}${GOOGLE_REDIRECT_PATH}`;
 }
 
 /** URL otorisasi Google (langkah pertama alur OAuth). */

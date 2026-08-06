@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in **DreksZone** — an Indonesian news portal (Kompas-style). Next.js 16 (App Router) + PostgreSQL, running in Docker.
+Guidance for AI coding agents working in **DreksZone** — an Indonesian news portal (Kompas-style). Next.js 16 (App Router) + Supabase (PostgreSQL terkelola). The web app runs in Docker; the database is hosted on Supabase.
 
 Full project docs, API reference, and design decisions: see [README.md](./README.md) — **link to it, don't duplicate it**.
 
@@ -14,8 +14,8 @@ npm run seed       # node scripts/seed.mjs — idempotent schema + seed (9 categ
 npx tsc --noEmit   # typecheck without building
 
 # Full stack (from repo root):
-docker compose up --build        # web on :3000, db on :5432, adminer on :8080
-docker compose down -v          # stop + wipe DB data
+docker compose up --build        # web on :3000 (DB = Supabase cloud, no local db container)
+docker compose down             # stop services (DB data lives in Supabase)
 ```
 
 There are **no lint or test scripts** — run `npm run build` (or `npx tsc --noEmit`) to verify changes.
@@ -27,7 +27,7 @@ Browser → Next.js Server Components (web/src/app/*/page.tsx)
         → web/src/lib/api.ts (fetch, absolute URL + ISR revalidate: 30)
         → Route Handlers (web/src/app/api/**/route.ts)
         → web/src/lib/db.ts (pg Pool, server-only)
-        → PostgreSQL (db container)
+        → Supabase (PostgreSQL terkelola)
 ```
 
 - There is **no separate API service** — the REST API is Next.js Route Handlers under `web/src/app/api/` (categories, articles, headlines, trending, related, search, health, auth).
@@ -50,13 +50,12 @@ Browser → Next.js Server Components (web/src/app/*/page.tsx)
 - **`redirect()` inside a server component** streams as `NEXT_REDIRECT` embedded in the shell (200 + template) when inside the `loading.tsx` Suspense boundary — the browser still navigates; don't rely on HTTP 307 in curl for `/tulis`.
 - **`requireUser()` uses `redirect()`** — never wrap it in try/catch (swallows `NEXT_REDIRECT`).
 - **Login rate limiter is gone** — with Google OAuth there is no password guessing; rate limiting is delegated to Google. (The old in-memory limiter in `auth.ts` was removed.)
-- **Google OAuth redirect URI** is `${NEXT_PUBLIC_SITE_URL}/api/auth/google/callback` — it must be registered in Google Cloud Console *and* match `SITE_URL` in `.env`, or Google rejects the login with `redirect_uri_mismatch`.
+- **Google OAuth redirect URI** is `${NEXT_PUBLIC_APP_URL}/api/auth/google/callback` — it must be registered in Google Cloud Console *and* match `NEXT_PUBLIC_APP_URL` in `.env`, or Google rejects the login with `redirect_uri_mismatch`.
 - **`users` table is Google-identity only** (`email` NOT NULL + unique index `idx_users_email`); there is no `username`/`password_hash` anymore. `GET /api/auth/me` now returns `{ id, email, name, avatar_url }`.
-- **`api.ts` requires an absolute URL** built from `NEXT_PUBLIC_SITE_URL` (fallback `http://localhost:3000`). Relative URLs throw `ERR_INVALID_URL` during static generation.
+- **`api.ts` requires an absolute URL** built from `NEXT_PUBLIC_APP_URL` (fallback `http://localhost:3000`). Relative URLs throw `ERR_INVALID_URL` during static generation.
 - **`GET /api/articles/[slug]` increments `views`** — a side effect inside a GET. `api.article()` uses `cache: 'no-store'`; don't wrap article detail fetches in ISR caching.
 - **`sitemap.ts` queries the DB at prerender time** — during `docker build` there is no DB, so the queries are wrapped in try/catch: the build falls back to a homepage-only sitemap and ISR (`revalidate: 3600`) regenerates the full version at runtime. Don't remove the try/catch or move DB access to build-time top-level.
 - **Seed is idempotent but asymmetric**: article inserts use `ON CONFLICT (slug) DO UPDATE` **only for the `*_en` columns** — Indonesian fields of existing rows are left untouched (edits to seed data won't update them), while English translations get backfilled on every seed run; categories use `DO UPDATE` for everything.
 - **Next 16**: `params`/`searchParams` are Promises — always `await` them.
 - **Node ≥ 20.9** required (Next 16); Dockerfile uses `node:20-alpine`.
-- Fixed container names (`kn-db`, `kn-web`, `adminer`) — a second stack copy will collide.
-- `adminer` is bound to `127.0.0.1:8080` only (host-local, no auth) — never expose it publicly; use an SSH tunnel for remote access.
+- **Database is Supabase-hosted** — there is no local `db`/`adminer` container and no `pgdata` volume anymore. `DATABASE_URL` must be the Supabase connection string (Transaction pooler, port 6543). SSL is auto-enabled for `*.supabase.co`/`*.supabase.com` hosts in `db.ts` and `seed.mjs` (or use `?sslmode=require` in the DSN). Adminer is gone — use the Supabase SQL editor instead.

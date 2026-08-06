@@ -9,7 +9,7 @@ import { formatDateTime, formatViews, readingTime } from '@/lib/utils';
 import ArticleCard from '@/components/ArticleCard';
 import ShareButtons from '@/components/ShareButtons';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 
 export const dynamic = 'force-dynamic';
 

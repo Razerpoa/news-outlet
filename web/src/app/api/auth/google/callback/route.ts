@@ -5,11 +5,11 @@ import {
   createSession,
   setSessionCookie,
 } from '@/lib/auth';
-import { exchangeCodeForToken, fetchGoogleUser, SITE_URL } from '@/lib/oauth';
+import { exchangeCodeForToken, fetchGoogleUser, APP_URL } from '@/lib/oauth';
 
 export const dynamic = 'force-dynamic';
 
-const badRedirect = (error: string) => `${SITE_URL}/login?error=${error}`;
+const badRedirect = (error: string) => `${APP_URL}/login?error=${error}`;
 
 /** Callback OAuth Google: verifikasi state, tukar code, dan buat sesi. */
 export async function GET(req: NextRequest) {
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     const sessionToken = await createSession(user.id);
     await setSessionCookie(sessionToken);
-    return NextResponse.redirect(`${SITE_URL}/write`);
+    return NextResponse.redirect(`${APP_URL}/write`);
   } catch (err) {
     console.error('[API ERROR]', err);
     return NextResponse.redirect(badRedirect('oauth_failed'));
