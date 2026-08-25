@@ -56,7 +56,8 @@ export default async function Footer() {
                 <Link href="/login">{t(lang, 'login_redaksi')}</Link>
               )}
             </li>
-            <li><Link href="/">{t(lang, 'privacy')}</Link></li>
+            <li><Link href="/privacy">{t(lang, 'privacy')}</Link></li>
+            <li><Link href="/terms">{t(lang, 'terms_link')}</Link></li>
             <li><Link href="/find">{t(lang, 'search_link')}</Link></li>
           </ul>
         </div>

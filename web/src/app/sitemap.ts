@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Halaman statis — di luar try/catch agar tetap masuk sitemap saat build tanpa DB.
     { url: `${siteUrl}/about`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/terms`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${siteUrl}/privacy`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/contact`, changeFrequency: 'monthly', priority: 0.5 },
   ];
 

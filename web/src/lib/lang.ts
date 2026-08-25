@@ -59,6 +59,7 @@ export const messages: Messages = {
     services: 'Layanan',
     contact: 'Kontak',
     privacy: 'Kebijakan Privasi',
+    terms_link: 'Syarat & Ketentuan',
     search_link: 'Pencarian',
     copyright: withBrand('© 2026 KabarNusantara. Hak cipta dilindungi undang-undang.'),
     read_count: '{n} dibaca',
@@ -220,6 +221,45 @@ export const messages: Messages = {
     ),
     terms_closing_email:
       'Pertanyaan tentang ketentuan ini dapat disampaikan melalui email {email} atau halaman Kontak redaksi kami.',
+    privacy_title: 'Kebijakan Privasi',
+    privacy_lead: withBrand(
+      'Privasi pembaca adalah prioritas redaksi KabarNusantara. Kebijakan ini menjelaskan data apa yang kami kumpulkan, bagaimana kami menggunakannya, dan hak-hak yang Anda miliki.',
+    ),
+    privacy_updated: 'Terakhir diperbarui',
+    privacy_s1_title: 'Informasi yang Kami Kumpulkan',
+    privacy_s1_body: withBrand(
+      'KabarNusantara hanya mengumpulkan data terbatas yang diperlukan untuk menyajikan layanan: data teknis seperti jenis peramban, perangkat, dan halaman yang dikunjungi, serta data yang Anda berikan secara sukarela — misalnya alamat email saat menghubungi redaksi.',
+    ),
+    privacy_s2_title: 'Penggunaan Informasi',
+    privacy_s2_body: withBrand(
+      'Informasi yang terkumpul digunakan untuk meningkatkan kualitas layanan, menganalisis tren pembacaan secara agregat, menjaga keamanan situs, serta membalas pesan yang Anda kirimkan kepada redaksi KabarNusantara.',
+    ),
+    privacy_s3_title: 'Cookie & Teknologi Serupa',
+    privacy_s3_body:
+      'Situs ini menggunakan cookie fungsional untuk menyimpan preferensi Anda — misalnya tema tampilan dan pilihan bahasa. Kami tidak memasang cookie iklan pihak ketiga maupun melacak aktivitas Anda di situs lain.',
+    privacy_s4_title: 'Berbagi Informasi',
+    privacy_s4_body: withBrand(
+      'Kami tidak menjual, menyewakan, atau memperdagangkan data pribadi pembaca kepada pihak ketiga. Pembagian data hanya dilakukan bila diwajibkan oleh hukum atau untuk melindungi hak dan keamanan KabarNusantara.',
+    ),
+    privacy_s5_title: 'Keamanan Data',
+    privacy_s5_body:
+      'Kami menerapkan langkah teknis dan organisasi yang wajar untuk melindungi data dari akses, pengubahan, atau pengungkapan yang tidak sah. Namun, tidak ada metode transmisi melalui internet yang sepenuhnya aman.',
+    privacy_s6_title: 'Penyimpanan Data',
+    privacy_s6_body:
+      'Data disimpan hanya selama diperlukan untuk tujuan yang dijelaskan dalam kebijakan ini atau selama diwajibkan oleh ketentuan hukum yang berlaku, setelah itu data dihapus atau dianonimkan.',
+    privacy_s7_title: 'Hak Anda',
+    privacy_s7_body: withBrand(
+      'Anda berhak meminta akses, koreksi, atau penghapusan data pribadi yang kami simpan. Permintaan dapat disampaikan melalui kanal kontak resmi KabarNusantara dan akan kami proses dalam waktu yang wajar.',
+    ),
+    privacy_s8_title: 'Perubahan Kebijakan',
+    privacy_s8_body: withBrand(
+      'Redaksi KabarNusantara dapat memperbarui kebijakan privasi ini sewaktu-waktu. Versi terbaru berlaku sejak dipublikasikan di halaman ini, dan tanggal pembaruan di bagian atas akan disesuaikan.',
+    ),
+    privacy_closing: withBrand(
+      'Pertanyaan tentang kebijakan privasi ini dapat disampaikan melalui halaman Kontak redaksi KabarNusantara.',
+    ),
+    privacy_closing_email:
+      'Pertanyaan tentang kebijakan privasi ini dapat disampaikan melalui email {email} atau halaman Kontak redaksi kami.',
     contact_title: 'Kontak',
     contact_lead: withBrand(
       'Sampaikan pertanyaan, koreksi, iklan, atau kerja sama Anda kepada tim KabarNusantara melalui kanal resmi berikut.',
@@ -266,6 +306,7 @@ export const messages: Messages = {
     services: 'Services',
     contact: 'Contact',
     privacy: 'Privacy Policy',
+    terms_link: 'Terms & Conditions',
     search_link: 'Search',
     copyright: withBrand('© 2026 KabarNusantara. All rights reserved.'),
     read_count: '{n} reads',
@@ -427,6 +468,45 @@ export const messages: Messages = {
     ),
     terms_closing_email:
       'Questions about these terms can be sent to {email} or through our editorial Contact page.',
+    privacy_title: 'Privacy Policy',
+    privacy_lead: withBrand(
+      'Reader privacy is a priority for the KabarNusantara editorial team. This policy explains what data we collect, how we use it, and the rights you have.',
+    ),
+    privacy_updated: 'Last updated',
+    privacy_s1_title: 'Information We Collect',
+    privacy_s1_body: withBrand(
+      'KabarNusantara only collects limited data required to deliver its services: technical data such as browser, device, and pages visited, as well as data you provide voluntarily — for example your email address when contacting the editorial team.',
+    ),
+    privacy_s2_title: 'How We Use Information',
+    privacy_s2_body: withBrand(
+      'Collected information is used to improve service quality, analyze reading trends in aggregate, keep the site secure, and reply to messages you send to the KabarNusantara editorial team.',
+    ),
+    privacy_s3_title: 'Cookies & Similar Technologies',
+    privacy_s3_body:
+      'This site uses functional cookies to store your preferences — such as display theme and language choice. We do not install third-party advertising cookies or track your activity on other websites.',
+    privacy_s4_title: 'Information Sharing',
+    privacy_s4_body: withBrand(
+      'We do not sell, rent, or trade readers’ personal data to third parties. Data is shared only when required by law or to protect the rights and security of KabarNusantara.',
+    ),
+    privacy_s5_title: 'Data Security',
+    privacy_s5_body:
+      'We apply reasonable technical and organizational measures to protect data from unauthorized access, alteration, or disclosure. However, no method of transmission over the Internet is completely secure.',
+    privacy_s6_title: 'Data Retention',
+    privacy_s6_body:
+      'Data is kept only as long as necessary for the purposes described in this policy or as required by applicable law, after which it is deleted or anonymized.',
+    privacy_s7_title: 'Your Rights',
+    privacy_s7_body: withBrand(
+      'You have the right to request access to, correction of, or deletion of the personal data we hold. Requests can be submitted through official KabarNusantara contact channels and will be processed within a reasonable time.',
+    ),
+    privacy_s8_title: 'Changes to This Policy',
+    privacy_s8_body: withBrand(
+      'The KabarNusantara editorial team may update this privacy policy from time to time. The latest version takes effect once published on this page, and the update date at the top will be adjusted accordingly.',
+    ),
+    privacy_closing: withBrand(
+      'Questions about this privacy policy can be submitted through the KabarNusantara editorial Contact page.',
+    ),
+    privacy_closing_email:
+      'Questions about this privacy policy can be sent to {email} or through our editorial Contact page.',
     contact_title: 'Contact',
     contact_lead: withBrand(
       'Send your questions, corrections, advertising, or partnership requests to the KabarNusantara team through the official channels below.',

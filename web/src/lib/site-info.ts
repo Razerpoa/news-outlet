@@ -16,6 +16,13 @@ const readEnv = (key: string): string => process.env[key]?.trim() ?? '';
  */
 export const SITE_TERMS_UPDATED = '2026-08-01';
 
+/**
+ * Tanggal pembaruan Kebijakan Privasi — konstanta tetap, BUKAN `new Date()`
+ * (halaman bersifat force-dynamic sehingga tanggal berjalan akan menyesatkan).
+ * Format ISO YYYY-MM-DD; pelokalan tampilan dilakukan di halaman.
+ */
+export const SITE_PRIVACY_UPDATED = '2026-08-01';
+
 export interface EditorialTeam {
   editorInChief: string;
   managingEditor: string;
