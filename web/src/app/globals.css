@@ -1556,6 +1556,123 @@ input {
   flex-shrink: 0;
 }
 
+/* ------------------------------ Halaman statis (Tentang / Syarat / Kontak) ------------------------------ */
+
+.static-page {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.static-page h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 4vw, 2.3rem);
+  margin-bottom: 10px;
+}
+
+.static-page-lead {
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  margin-bottom: 24px;
+}
+
+.static-page-updated {
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding-bottom: 16px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+
+.static-page section {
+  margin-bottom: 28px;
+}
+
+.static-page h2 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+.static-page p {
+  color: var(--ink-soft);
+}
+
+.static-page a:not(.btn) {
+  color: var(--accent);
+}
+
+.static-page a:not(.btn):hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Baris label–nilai (tim redaksi di /about, kanal kontak di /contact) */
+.static-page-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.static-page-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+}
+
+.static-page-row dt {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.static-page-row dd {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.02rem;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* Bagian bernomor pada halaman Syarat & Ketentuan */
+.static-page-sections {
+  list-style: none;
+  counter-reset: static-section;
+}
+
+.static-page-sections li {
+  counter-increment: static-section;
+  margin-bottom: 22px;
+}
+
+.static-page-sections li:last-child {
+  margin-bottom: 0;
+}
+
+.static-page-sections h2::before {
+  content: counter(static-section) '. ';
+  color: var(--accent);
+}
+
+.static-page-note {
+  font-size: 0.9rem;
+  color: var(--muted);
+  background: var(--bg-alt);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-top: 28px;
+}
+
 /* ------------------------------ Footer ------------------------------ */
 
 .site-footer {
