@@ -12,6 +12,10 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: 'hourly', priority: 1 },
+    // Halaman statis — di luar try/catch agar tetap masuk sitemap saat build tanpa DB.
+    { url: `${siteUrl}/about`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${siteUrl}/terms`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${siteUrl}/contact`, changeFrequency: 'monthly', priority: 0.5 },
   ];
 
   try {

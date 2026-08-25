@@ -24,6 +24,18 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       # Penulis tambahan yang diizinkan login, dipisah koma (opsional)
       AUTHOR_EMAILS: ${AUTHOR_EMAILS:-}
+      # Identitas situs (opsional) — brand + detail redaksi/kontak untuk halaman
+      # /about, /terms, /contact (kosong = baris terkait disembunyikan).
+      # CATATAN: teks brand yang ter-bundle di sisi klien hanya berubah setelah
+      # image di-rebuild (docker compose up --build); sisanya cukup restart.
+      NEXT_PUBLIC_SITE_BRAND_NAME: ${NEXT_PUBLIC_SITE_BRAND_NAME:-}
+      SITE_EDITOR_IN_CHIEF: ${SITE_EDITOR_IN_CHIEF:-}
+      SITE_MANAGING_EDITOR: ${SITE_MANAGING_EDITOR:-}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      CONTACT_EMAIL_EDITORIAL: ${CONTACT_EMAIL_EDITORIAL:-}
+      CONTACT_EMAIL_ADS: ${CONTACT_EMAIL_ADS:-}
+      CONTACT_PHONE: ${CONTACT_PHONE:-}
+      CONTACT_ADDRESS: ${CONTACT_ADDRESS:-}
     ports:
       - "${WEB_PORT:-3000}:3000"
 

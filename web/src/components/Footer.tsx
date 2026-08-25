@@ -37,7 +37,7 @@ export default async function Footer() {
         <div className="footer-col">
           <h4>{t(lang, 'company')}</h4>
           <ul>
-            <li><Link href="/">{t(lang, 'about_us')}</Link></li>
+            <li><Link href="/about">{t(lang, 'about_us')}</Link></li>
             <li><Link href="/">{t(lang, 'editorial')}</Link></li>
             <li><Link href="/">{t(lang, 'media_guidelines')}</Link></li>
             <li><Link href="/">{t(lang, 'careers')}</Link></li>
@@ -48,7 +48,7 @@ export default async function Footer() {
         <div className="footer-col">
           <h4>{t(lang, 'services')}</h4>
           <ul>
-            <li><Link href="/">{t(lang, 'contact')}</Link></li>
+            <li><Link href="/contact">{t(lang, 'contact')}</Link></li>
             <li>
               {user ? (
                 <Link href="/write">{t(lang, 'write_news')}</Link>

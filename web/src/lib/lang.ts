@@ -162,6 +162,75 @@ export const messages: Messages = {
     meta_keys: ['berita', 'Indonesia', 'nasional', 'politik', 'ekonomi', 'teknologi', 'olahraga'].join(', '),
     og_desc: 'Portal berita independen Indonesia. Informasi akurat, berimbang, dan mendalam.',
     not_found_meta: 'Artikel tidak ditemukan',
+    about_title: 'Tentang Kami',
+    about_lead: withBrand(
+      'KabarNusantara adalah portal berita independen yang hadir untuk masyarakat Indonesia dengan laporan yang akurat, berimbang, dan mendalam — dari Sabang sampai Merauke.',
+    ),
+    about_mission_title: 'Visi & Misi',
+    about_mission_text: withBrand(
+      'Visi kami menjadi rujukan utama berita nasional yang tepercaya. Misi kami memverifikasi fakta sebelum menerbitkan, menampilkan berbagai sudut pandang secara adil, serta menghadirkan konteks yang membantu pembaca memahami peristiwa — diperbarui setiap hari oleh redaksi KabarNusantara.',
+    ),
+    about_values_title: 'Nilai Redaksi',
+    about_values_text:
+      'Akurat: kami memverifikasi sebelum menerbitkan. Berimbang: setiap pihak mendapat ruang yang adil. Independen: tidak ada kepentingan yang mengarahkan pemberitaan. Mendalam: kami menghadirkan konteks, bukan sekadar kabar.',
+    about_team_title: 'Tim Redaksi',
+    about_team_lead: 'Struktur pimpinan redaksi saat ini:',
+    about_role_editor_in_chief: 'Pemimpin Redaksi',
+    about_role_managing_editor: 'Redaktur Pelaksana',
+    about_contact_title: 'Hubungi Kami',
+    about_contact_cta: withBrand(
+      'Ada koreksi berita, pertanyaan pers, atau penawaran kerja sama? Tim redaksi KabarNusantara siap menerima pesan Anda.',
+    ),
+    terms_title: 'Syarat & Ketentuan',
+    terms_lead: withBrand(
+      'Dengan mengakses dan menggunakan situs KabarNusantara, Anda dianggap telah membaca, memahami, dan menyetujui ketentuan berikut.',
+    ),
+    terms_updated: 'Terakhir diperbarui',
+    terms_s1_title: 'Penerimaan Ketentuan',
+    terms_s1_body: withBrand(
+      'Dengan masuk, menjelajah, atau berinteraksi dengan situs ini dalam bentuk apa pun, Anda menyatakan setuju untuk terikat oleh syarat dan ketentuan yang berlaku pada KabarNusantara. Apabila Anda tidak menyetujuinya, mohon hentikan penggunaan situs ini.',
+    ),
+    terms_s2_title: 'Kekayaan Intelektual',
+    terms_s2_body: withBrand(
+      'Seluruh konten pada KabarNusantara — termasuk teks, foto, grafis, logo, dan desain — dilindungi undang-undang hak cipta dan merupakan milik redaksi atau pemberi lisensinya. Dilarang menyalin, mendistribusikan ulang, atau memperjualbelikannya tanpa izin tertulis.',
+    ),
+    terms_s3_title: 'Penggunaan yang Diizinkan',
+    terms_s3_body:
+      'Anda boleh membaca, mencetak, dan membagikan tautan artikel untuk keperluan non-komersial dengan tetap mencantumkan atribusi dan tautan ke sumber aslinya. Kutipan singkat diperbolehkan sepanjang tidak mengubah makna isi berita.',
+    terms_s4_title: 'Materi dari Pengguna',
+    terms_s4_body: withBrand(
+      'Apabila Anda mengirimkan materi — misalnya opini, foto, atau informasi liputan — kepada KabarNusantara, Anda menjamin bahwa materi tersebut asli dan tidak melanggar hak pihak lain, serta memberi redaksi izin untuk menyunting dan menerbitkannya dengan tetap mencantumkan identitas pengirim.',
+    ),
+    terms_s5_title: 'Tautan Pihak Ketiga',
+    terms_s5_body:
+      'Situs ini dapat memuat tautan menuju situs eksternal untuk melengkapi informasi. Kami tidak mengendalikan maupun bertanggung jawab atas isi, keakuratan, atau kebijakan privasi situs-situs tersebut.',
+    terms_s6_title: 'Batasan Tanggung Jawab',
+    terms_s6_body: withBrand(
+      'KabarNusantara berupaya menyajikan informasi yang akurat dan tepat waktu, namun tidak menjamin situs bebas dari kesalahan atau gangguan. Kerugian langsung maupun tidak langsung yang timbul dari penggunaan situs ini tidak menjadi tanggung jawab redaksi sejauh diizinkan oleh hukum.',
+    ),
+    terms_s7_title: 'Perubahan Ketentuan',
+    terms_s7_body: withBrand(
+      'Redaksi KabarNusantara dapat memperbarui syarat dan ketentuan ini sewaktu-waktu. Versi terbaru berlaku sejak dipublikasikan di halaman ini, dan tanggal pembaruan di bagian atas akan disesuaikan.',
+    ),
+    terms_s8_title: 'Hukum yang Berlaku',
+    terms_s8_body:
+      'Syarat dan ketentuan ini tunduk pada hukum Negara Kesatuan Republik Indonesia. Setiap perselisihan diselesaikan secara musyawarah, dan bila tidak tercapai, melalui pengadilan yang berwenang di Indonesia.',
+    terms_closing: withBrand(
+      'Pertanyaan tentang ketentuan ini dapat disampaikan melalui halaman Kontak redaksi KabarNusantara.',
+    ),
+    terms_closing_email:
+      'Pertanyaan tentang ketentuan ini dapat disampaikan melalui email {email} atau halaman Kontak redaksi kami.',
+    contact_title: 'Kontak',
+    contact_lead: withBrand(
+      'Sampaikan pertanyaan, koreksi, iklan, atau kerja sama Anda kepada tim KabarNusantara melalui kanal resmi berikut.',
+    ),
+    contact_email_general_label: 'Email Umum',
+    contact_email_editorial_label: 'Email Redaksi',
+    contact_email_ads_label: 'Email Iklan & Kerja Sama',
+    contact_phone_label: 'Telepon / WhatsApp',
+    contact_address_label: 'Alamat Redaksi',
+    contact_none_configured:
+      'Kanal kontak belum dipublikasikan. Silakan periksa kembali halaman ini beberapa saat lagi.',
   },
   en: {
     tagline: 'Honest, Clear, Enlightening',
@@ -300,6 +369,75 @@ export const messages: Messages = {
     meta_keys: 'news, Indonesia, national, politics, economy, technology, sports',
     og_desc: 'Indonesia’s independent news portal. Accurate, balanced, and in-depth reporting.',
     not_found_meta: 'Article not found',
+    about_title: 'About Us',
+    about_lead: withBrand(
+      'KabarNusantara is an independent news portal serving Indonesians with accurate, balanced, and in-depth reporting — from Sabang to Merauke.',
+    ),
+    about_mission_title: 'Vision & Mission',
+    about_mission_text: withBrand(
+      'Our vision is to be the most trusted reference for national news. Our mission is to verify facts before publishing, present every side fairly, and provide the context readers need to understand events — updated daily by the KabarNusantara editorial team.',
+    ),
+    about_values_title: 'Our Values',
+    about_values_text:
+      'Accurate: we verify before we publish. Balanced: every party gets a fair share of voice. Independent: no interest steers our coverage. In-depth: we deliver context, not just headlines.',
+    about_team_title: 'Editorial Team',
+    about_team_lead: 'Current editorial leadership:',
+    about_role_editor_in_chief: 'Editor-in-Chief',
+    about_role_managing_editor: 'Managing Editor',
+    about_contact_title: 'Get in Touch',
+    about_contact_cta: withBrand(
+      'Corrections, press inquiries, or partnership proposals? The KabarNusantara editorial team welcomes your message.',
+    ),
+    terms_title: 'Terms & Conditions',
+    terms_lead: withBrand(
+      'By accessing and using the KabarNusantara website, you are deemed to have read, understood, and agreed to the following terms.',
+    ),
+    terms_updated: 'Last updated',
+    terms_s1_title: 'Acceptance of Terms',
+    terms_s1_body: withBrand(
+      'By entering, browsing, or interacting with this site in any way, you agree to be bound by the terms and conditions applicable to KabarNusantara. If you do not agree, please stop using this site.',
+    ),
+    terms_s2_title: 'Intellectual Property',
+    terms_s2_body: withBrand(
+      'All content on KabarNusantara — including text, photos, graphics, logos, and design — is protected by copyright law and belongs to the editorial team or its licensors. Copying, redistributing, or commercializing it without written permission is prohibited.',
+    ),
+    terms_s3_title: 'Permitted Use',
+    terms_s3_body:
+      'You may read, print, and share article links for non-commercial purposes provided you include attribution and a link to the original source. Short quotations are allowed as long as they do not alter the meaning of the report.',
+    terms_s4_title: 'User Submissions',
+    terms_s4_body: withBrand(
+      'When you submit material — such as opinions, photos, or report tips — to KabarNusantara, you warrant that it is original and does not infringe the rights of others, and you grant the editorial team permission to edit and publish it while crediting you.',
+    ),
+    terms_s5_title: 'Third-Party Links',
+    terms_s5_body:
+      'This site may contain links to external websites to complement its information. We neither control nor take responsibility for the content, accuracy, or privacy practices of those websites.',
+    terms_s6_title: 'Limitation of Liability',
+    terms_s6_body: withBrand(
+      'KabarNusantara strives to provide accurate and timely information, but does not guarantee the site will be free of errors or interruptions. Direct or indirect losses arising from the use of this site are not the responsibility of the editorial team to the extent permitted by law.',
+    ),
+    terms_s7_title: 'Changes to These Terms',
+    terms_s7_body: withBrand(
+      'The KabarNusantara editorial team may update these terms and conditions from time to time. The latest version takes effect once published on this page, and the update date at the top will be adjusted accordingly.',
+    ),
+    terms_s8_title: 'Governing Law',
+    terms_s8_body:
+      'These terms and conditions are governed by the laws of the Republic of Indonesia. Disputes are settled amicably first and, failing that, through the competent courts in Indonesia.',
+    terms_closing: withBrand(
+      'Questions about these terms can be submitted through the KabarNusantara editorial Contact page.',
+    ),
+    terms_closing_email:
+      'Questions about these terms can be sent to {email} or through our editorial Contact page.',
+    contact_title: 'Contact',
+    contact_lead: withBrand(
+      'Send your questions, corrections, advertising, or partnership requests to the KabarNusantara team through the official channels below.',
+    ),
+    contact_email_general_label: 'General Email',
+    contact_email_editorial_label: 'Editorial Email',
+    contact_email_ads_label: 'Advertising & Partnership Email',
+    contact_phone_label: 'Phone / WhatsApp',
+    contact_address_label: 'Editorial Address',
+    contact_none_configured:
+      'Contact channels have not been published yet. Please check this page again later.',
   },
 };
 
