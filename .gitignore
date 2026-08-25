@@ -44,3 +44,7 @@ __pycache__/
 
 # Vercel
 .vercel
+
+scripts/
+
+.hive/

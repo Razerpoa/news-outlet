@@ -2,7 +2,7 @@ name: kabar-nusantara
 
 services:
   web:
-    image: razorcut777/drekszone:latest
+    # image: razorcut777/drekszone:latest
     build:
       context: ./web
     container_name: kn-web

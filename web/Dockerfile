@@ -1,11 +1,11 @@
 # ---- Dependencies stage ----
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
 # ---- Builder stage ----
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -13,7 +13,7 @@ COPY . .
 RUN npm run build
 
 # ---- Runner stage ----
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -31,4 +31,4 @@ USER nextjs
 EXPOSE 3000
 
 # Seed skema + data (idempotent) sebelum melayani request
-CMD ["sh", "-c", "node scripts/seed.mjs && node server.js"]
+CMD ["sh", "-c", "node server.js"]
