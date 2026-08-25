@@ -147,7 +147,7 @@ export default async function HomePage() {
                       {t(lang, 'read_more')} →
                     </Link>
                   </div>
-                  <div className="news-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                   <div className="news-grid">
                     {items.map((a) => (
                       <ArticleCard key={a.id} article={a} lang={lang} />
                     ))}
