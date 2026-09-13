@@ -1,5 +1,5 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
@@ -15,15 +15,6 @@ const DEFAULT_IMAGE =
 
 function isNonEmptyString(v: unknown): v is string {
   return typeof v === 'string' && v.trim().length > 0;
-}
-
-function sanitizeFilename(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 120) || 'upload';
 }
 
 function mimeToExtension(contentType: string | null): string {
@@ -43,17 +34,64 @@ function mimeToExtension(contentType: string | null): string {
   }
 }
 
-async function persistLocalImage(fileBuffer: Buffer, sourceName: string, contentType?: string): Promise<string> {
-  const uploadDir = path.resolve(process.cwd(), 'public', 'uploads', 'articles');
-  await fs.mkdir(uploadDir, { recursive: true });
+const IMAGE_BUCKET = 'article-images';
+const KNOWN_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
 
-  const ext = path.extname(sourceName) || mimeToExtension(contentType || null);
-  const safeName = sanitizeFilename(path.basename(sourceName, ext) || `upload-${Date.now()}`);
-  const finalName = `${safeName}-${Date.now()}${ext}`;
-  const targetPath = path.join(uploadDir, finalName);
+let bucketEnsured: Promise<void> | null = null;
 
-  await fs.writeFile(targetPath, fileBuffer);
-  return `/uploads/articles/${finalName}`;
+/** Pastikan bucket gambar publik ada (idempotent + aman untuk pemanggilan paralel). */
+async function ensureArticleImageBucket(supabase: SupabaseClient): Promise<void> {
+  if (!bucketEnsured) {
+    bucketEnsured = (async () => {
+      const { data: existing } = await supabase.storage.getBucket(IMAGE_BUCKET);
+      if (existing) {
+        if (existing.public === false) {
+          await supabase.storage.updateBucket(IMAGE_BUCKET, { public: true });
+        }
+        return;
+      }
+      const { error } = await supabase.storage.createBucket(IMAGE_BUCKET, { public: true });
+      if (error) {
+        // Balapan dengan request lain: bucket mungkin sudah dibuat di antara get dan create.
+        const { data: after } = await supabase.storage.getBucket(IMAGE_BUCKET);
+        if (!after) throw error;
+        if (after.public === false) {
+          await supabase.storage.updateBucket(IMAGE_BUCKET, { public: true });
+        }
+      }
+    })();
+  }
+  try {
+    await bucketEnsured;
+  } catch (err) {
+    bucketEnsured = null; // biarkan request berikutnya mencoba lagi
+    throw err;
+  }
+}
+
+/** Ekstensi aman dari nama file/URL; jatuh ke ekstensi berbasis MIME. */
+function safeImageExt(name: string, contentType: string): string {
+  const dot = name.lastIndexOf('.');
+  const ext = dot > 0 ? name.slice(dot).toLowerCase() : '';
+  return KNOWN_IMAGE_EXTS.includes(ext) ? ext : mimeToExtension(contentType);
+}
+
+/** Unggah buffer gambar ke Supabase Storage dan kembalikan URL publik. */
+async function uploadImageToStorage(
+  supabase: SupabaseClient,
+  fileBuffer: Buffer,
+  contentType: string,
+  ext: string
+): Promise<string> {
+  await ensureArticleImageBucket(supabase);
+  const objectPath = `articles/${Date.now()}-${randomUUID()}${ext}`;
+  const { data, error } = await supabase.storage.from(IMAGE_BUCKET).upload(objectPath, fileBuffer, {
+    contentType,
+    cacheControl: '3600',
+    upsert: false,
+  });
+  if (error || !data) throw error ?? new Error('Gagal mengunggah gambar');
+  return supabase.storage.from(IMAGE_BUCKET).getPublicUrl(data.path).data.publicUrl;
 }
 
 async function storeUploadedFile(file: File): Promise<string> {
@@ -61,7 +99,8 @@ async function storeUploadedFile(file: File): Promise<string> {
     throw new Error('Tipe file gambar tidak didukung');
   }
   const fileBuffer = Buffer.from(await file.arrayBuffer());
-  return persistLocalImage(fileBuffer, file.name, file.type);
+  const ext = safeImageExt(file.name, file.type);
+  return uploadImageToStorage(getSupabase(), fileBuffer, file.type, ext);
 }
 
 async function storeRemoteImage(remoteUrl: string): Promise<string> {
@@ -80,8 +119,8 @@ async function storeRemoteImage(remoteUrl: string): Promise<string> {
   }
 
   const fileBuffer = Buffer.from(await response.arrayBuffer());
-  const ext = path.extname(target.pathname) || mimeToExtension(contentType);
-  return persistLocalImage(fileBuffer, `remote-${Date.now()}${ext}`, contentType);
+  const ext = safeImageExt(target.pathname, contentType);
+  return uploadImageToStorage(getSupabase(), fileBuffer, contentType, ext);
 }
 
 /** Hasilkan slug unik dari judul; bila bentrok, tambahkan angka (-2, -3, ...). */

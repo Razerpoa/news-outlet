@@ -71,6 +71,8 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supaba
 docker compose exec web node scripts/seed.mjs
 ```
 
+5. Gambar artikel disimpan di **Supabase Storage** (bucket publik `article-images`). Bucket dibuat otomatis pada unggahan pertama via `POST /api/articles` — tidak perlu setup manual dan tidak ada env tambahan. URL publik hasil unggahan disimpan di kolom `image_url`.
+
 ### Setup Google OAuth
 
 1. Buka [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → buat **OAuth Client ID** (tipe *Web application*).
